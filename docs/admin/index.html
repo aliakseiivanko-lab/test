@@ -5,67 +5,92 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Админка тестов</title>
 <style>
-  :root { --bg:#f3f5f9; --card:#fff; --text:#1d2433; --muted:#667085; --accent:#2f6fed; --line:#dde2ec; --ok:#1a8f4a; --err:#c53030; }
+  :root { --bg:#f3f5f9; --card:#fff; --text:#1d2433; --muted:#667085; --accent:#2f6fed; --line:#dde2ec; --ok:#1a8f4a; --err:#c53030; --warn:#fff4d6; }
   @media (prefers-color-scheme: dark) {
-    :root { --bg:#14171f; --card:#1e232e; --text:#e8ebf2; --muted:#9aa3b5; --accent:#6c9bff; --line:#323a4a; --ok:#4cc27d; --err:#ff7b7b; }
+    :root { --bg:#14171f; --card:#1e232e; --text:#e8ebf2; --muted:#9aa3b5; --accent:#6c9bff; --line:#323a4a; --ok:#4cc27d; --err:#ff7b7b; --warn:#3b3417; }
   }
   * { box-sizing: border-box; }
   body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 Arial, "Segoe UI", sans-serif; }
-  .wrap { max-width: 820px; margin: 0 auto; padding: 16px; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 16px; }
   .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:16px; }
   h1 { font-size:22px; margin:0 0 4px; } h2 { font-size:18px; margin:0 0 12px; }
   .muted { color:var(--muted); }
   label { display:block; font-weight:bold; margin:12px 0 4px; }
-  select, input[type=text] { width:100%; padding:10px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text); }
-  .row { display:flex; gap:12px; } .row > div { flex:1; }
+  select, input[type=text], input[type=password], input[type=number], textarea { width:100%; padding:10px 12px; font-size:16px; font-family:inherit; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text); }
+  textarea { resize:vertical; }
   button { background:var(--accent); color:#fff; border:0; border-radius:8px; padding:12px 22px; font-size:16px; cursor:pointer; margin-top:16px; }
   button:disabled { opacity:.5; cursor:default; }
-  .err { color:var(--err); margin-top:10px; min-height:1.2em; }
-  .q { border-top:1px solid var(--line); padding:16px 0; } .q:first-child { border-top:0; }
-  .qt { white-space:pre-wrap; font-weight:bold; margin-bottom:10px; }
-  .qimg { max-width:100%; max-height:320px; display:block; margin:0 0 12px; border-radius:8px; border:1px solid var(--line); }
-  .opt { display:flex; align-items:flex-start; gap:10px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; margin-bottom:6px; cursor:pointer; }
-  .opt input { margin-top:5px; transform:scale(1.2); }
-  .opt:hover { border-color:var(--accent); }
-  .mrow { display:flex; gap:12px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
-  .mrow .l { flex:1 1 200px; } .mrow select { flex:1 1 200px; }
-  #bar { position:sticky; top:0; z-index:5; background:var(--card); border-bottom:1px solid var(--line); padding:10px 16px; display:flex; justify-content:space-between; align-items:center; }
-  #timer { font-weight:bold; font-variant-numeric:tabular-nums; }
-  .hidden { display:none !important; }
-  .big { font-size:42px; font-weight:bold; margin:8px 0; }
-  .chips { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 4px; }
-  .chip { margin:0; padding:10px 18px; background:var(--bg); color:var(--text); border:1px solid var(--line); }
-  .chip.on { background:var(--accent); color:#fff; border-color:var(--accent); }
-  .tcard { display:flex; justify-content:space-between; align-items:center; gap:12px; width:100%; text-align:left; margin:0 0 8px; background:var(--bg); color:var(--text); border:1px solid var(--line); }
-  .tcard:hover { border-color:var(--accent); }
-  .tcard small { color:var(--muted); display:block; }
-  .go { color:var(--accent); font-weight:bold; white-space:nowrap; }
-  .res { border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:8px; }
-  .res.ok { border-left:6px solid var(--ok); } .res.bad { border-left:6px solid var(--err); }
-  .badge { font-weight:bold; } .ok .badge { color:var(--ok); } .bad .badge { color:var(--err); }
-  .sec { background:transparent; color:var(--accent); border:1px solid var(--accent); }
-
-
-
-  .wrap { max-width: 900px; }
-  input[type=password], input[type=number] { width:100%; padding:10px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text); }
-  input[type=file] { width:100%; padding:10px 0; font-size:15px; color:var(--text); }
+  button.sec { background:transparent; color:var(--accent); border:1px solid var(--accent); }
   button.danger { background:var(--err); }
   button.small { padding:7px 12px; font-size:14px; margin:6px 6px 0 0; }
+  button.mini { padding:4px 10px; font-size:13px; margin:0; }
+  .err { color:var(--err); margin-top:10px; min-height:1.2em; }
+  .hidden { display:none !important; }
   .top { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
   .top button { margin:0; }
   .item { border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:10px; }
-  .item.bad { border-left:6px solid var(--err); } .item.good { border-left:6px solid var(--ok); }
-  .good-t { color:var(--ok); font-weight:bold; } .bad-t { color:var(--err); }
+  .item.bad { border-left:6px solid var(--err); } .item.good { border-left:6px solid var(--ok); } .item.skip { opacity:.55; }
+  .good-t { color:var(--ok); font-weight:bold; } .bad-t { color:var(--err); } .warn-t { color:#b7791f; }
   .msg { padding:12px 14px; border-radius:10px; margin-bottom:16px; border:1px solid var(--line); background:var(--card); white-space:pre-wrap; }
   .msg.ok { border-color:var(--ok); } .msg.error { border-color:var(--err); color:var(--err); }
-  pre.view { white-space:pre-wrap; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px; font:14px/1.5 Arial,sans-serif; margin:8px 0 0; }
+  .warn { background:var(--warn); border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin:10px 0; }
   details summary { cursor:pointer; color:var(--accent); margin-top:12px; }
   details ol { padding-left:20px; }
   .inline { display:flex; gap:10px; align-items:center; flex-wrap:wrap; } .inline input[type=number] { width:100px; }
   .inline button { margin:0; }
   .chk { display:flex; align-items:center; gap:8px; font-weight:normal; margin-top:12px; } .chk input { transform:scale(1.2); }
-
+  .tbar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:10px 0; }
+  .tbar button { margin:0; } .tbar select, .tbar input[type=text] { width:auto; min-width:140px; padding:8px 10px; font-size:15px; }
+  .tbar .sp { flex:1; }
+  .grid { display:flex; gap:16px; flex-wrap:wrap; } .grid > div { flex:1 1 220px; }
+  .drop { border:2px dashed var(--line); border-radius:12px; padding:28px 16px; text-align:center; cursor:pointer; margin:12px 0 4px; }
+  .drop:hover, .drop.over { border-color:var(--accent); background:rgba(47,111,237,.07); }
+  .irow { display:flex; gap:10px; align-items:flex-start; }
+  .irow .grow { flex:1; min-width:0; }
+  .irow input[type=checkbox] { transform:scale(1.25); margin-top:6px; }
+  .btns { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; } .btns button { margin:0; }
+  .qview details { border:1px solid var(--line); border-radius:8px; padding:6px 10px; margin:6px 0; background:var(--bg); }
+  .qview summary { margin:0; color:var(--text); }
+  .qview ul { padding-left:4px; margin:6px 0; } .qview li { list-style:none; margin:2px 0; }
+  .qview pre { white-space:pre-wrap; margin:6px 0; font:inherit; font-weight:bold; }
+  .thumb { max-width:260px; max-height:160px; display:block; border-radius:8px; border:1px solid var(--line); margin:6px 0; }
+  .ok { color:var(--ok); }
+  /* редактор */
+  .qcard { border:1px solid var(--line); border-radius:10px; padding:12px; margin:10px 0; background:var(--bg); }
+  .qhead { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+  .qhead select { width:auto; padding:6px 8px; font-size:15px; } .qhead input[type=number] { width:80px; padding:6px 8px; }
+  .qhead .sp { flex:1; }
+  .orow { display:flex; gap:8px; align-items:center; margin:5px 0; }
+  .orow input[type=text] { flex:1; min-width:0; }
+  .orow input[type=checkbox], .orow input[type=radio] { transform:scale(1.3); flex:none; }
+  .imgbox { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:8px; }
+  .imgbox img { max-height:80px; max-width:140px; border-radius:6px; border:1px solid var(--line); }
+  .edbar { position:sticky; bottom:0; z-index:4; background:var(--card); border-top:1px solid var(--line); padding:8px 12px; margin:0 -20px -20px; border-radius:0 0 12px 12px; }
+  /* предпросмотр «глазами ученика» */
+  .pvov { position:fixed; inset:0; z-index:200; background:var(--bg); overflow:auto; }
+  .pvtop { position:sticky; top:0; z-index:3; background:var(--card); border-bottom:1px solid var(--line); padding:8px 14px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .pvtop button { margin:0; padding:6px 14px; font-size:14px; }
+  .pvtop label { display:inline-flex; gap:5px; align-items:center; font-weight:normal; margin:0 0 0 6px; }
+  .pvtop .sp { flex:1; }
+  .pvtop button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .pvnote { max-width:820px; margin:10px auto 0; padding:0 16px; }
+  .pv { max-width:820px; margin:12px auto 40px; padding:0 16px; }
+  .pv.phone { max-width:390px; padding:12px; border:2px solid var(--line); border-radius:28px; box-shadow:0 6px 24px rgba(0,0,0,.25); }
+  .pv .card { padding:20px; }
+  .pv .q { border-top:1px solid var(--line); padding:16px 0; } .pv .q:first-child { border-top:0; }
+  .pv .q.res-ok { border-left:6px solid var(--ok); padding-left:10px; } .pv .q.res-bad { border-left:6px solid var(--err); padding-left:10px; }
+  .pv .qt { white-space:pre-wrap; font-weight:bold; margin-bottom:10px; }
+  .pv .qimg { max-width:100%; max-height:320px; display:block; margin:0 0 12px; border-radius:8px; border:1px solid var(--line); }
+  .pv .noimg { border:1px dashed var(--line); border-radius:8px; padding:10px 12px; margin:0 0 12px; color:var(--muted); }
+  .pv .opt { display:flex; align-items:flex-start; gap:10px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; margin:0 0 6px; cursor:pointer; font-weight:normal; }
+  .pv .opt input { margin-top:5px; transform:scale(1.2); }
+  .pv .opt:hover { border-color:var(--accent); }
+  .pv .opt.right { border-color:var(--ok); background:rgba(76,194,125,.14); }
+  .pv .mrow { display:flex; gap:12px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
+  .pv .mrow .l { flex:1 1 200px; } .pv .mrow select { flex:1 1 200px; }
+  .pv .key { color:var(--ok); font-size:14px; margin-top:4px; }
+  .pv .verdict { font-weight:bold; margin-top:6px; } .pv .res-ok .verdict { color:var(--ok); } .pv .res-bad .verdict { color:var(--err); }
+  .pv .big { font-size:34px; font-weight:bold; margin:4px 0; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -102,23 +127,39 @@
     </div>
     <div id="status" class="msg hidden"></div>
 
-    <div class="card">
-      <h2>Загрузить тесты</h2>
-      <div class="muted">Файл Excel (.xlsx) или ZIP (Excel + картинки). Можно выбрать несколько файлов сразу или один ZIP с несколькими тестами.
-        <a href="template.xlsx" download>Скачать шаблон</a></div>
-      <input type="file" id="files" accept=".xlsx,.zip" multiple>
-      <div id="preview" style="margin-top:10px"></div>
-      <button id="btnSave" class="hidden">Сохранить на сайт</button>
+    <div id="home">
+      <div class="card">
+        <h2>Загрузить тесты</h2>
+        <div class="muted">Файл Excel (.xlsx), ZIP (Excel + картинки) или целая папка. Можно выбрать много файлов сразу или один ZIP с несколькими тестами
+          (внутри — вложенные ZIP или папки «Excel + картинки»). <a href="template.xlsx" download>Скачать шаблон</a></div>
+        <div id="drop" class="drop" tabindex="0"><b>Перетащите сюда файлы или папку</b><br><span class="muted">или нажмите, чтобы выбрать файлы (можно сразу много)</span></div>
+        <input type="file" id="files" multiple accept=".xlsx,.zip,.png,.jpg,.jpeg,.gif,.webp,.bmp" class="hidden">
+        <input type="file" id="folder" webkitdirectory multiple class="hidden">
+        <div class="tbar"><button class="sec small" id="btnFolder">Выбрать папку…</button><button class="sec small hidden" id="btnClear">Очистить список</button></div>
+        <div id="preview"></div>
+        <div class="tbar"><button id="btnSave" class="hidden">Сохранить на сайт</button></div>
+      </div>
+
+      <div class="card">
+        <div class="top"><h2 style="margin:0">Тесты на сайте</h2><button id="btnNew">+ Создать тест</button></div>
+        <div class="muted" style="margin-top:6px">«Редактировать» открывает полный редактор. «Предпросмотр» показывает тест так, как его увидит ученик, — можно включить правильные ответы.</div>
+        <div class="tbar" style="margin-top:12px">
+          <select id="fClass"></select>
+          <input type="text" id="fText" placeholder="Поиск по названию…">
+          <label class="chk" style="margin:0"><input type="checkbox" id="selAll"> выбрать все</label>
+          <span class="sp"></span>
+          <span class="muted" id="selInfo"></span>
+          <button class="sec small" id="btnDlSel" disabled>Скачать выбранные (ZIP)</button>
+          <button class="danger small" id="btnDelSel" disabled>Удалить выбранные</button>
+        </div>
+        <div id="list"></div>
+        <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+        <label for="perTest" style="margin-top:0">Вопросов у ученика в каждом тесте</label>
+        <div class="inline"><input type="number" id="perTest" min="1" max="100" value="5"><button class="sec" id="btnPer">Применить</button></div>
+      </div>
     </div>
 
-    <div class="card">
-      <h2>Тесты на сайте</h2>
-      <div class="muted">Чтобы исправить тест: нажмите «Скачать», измените файл в Excel и загрузите его снова, выбрав «Заменить».</div>
-      <div id="list" style="margin-top:12px"></div>
-      <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
-      <label for="perTest" style="margin-top:0">Вопросов у ученика в каждом тесте</label>
-      <div class="inline"><input type="number" id="perTest" min="1" max="100" value="5"><button class="sec" id="btnPer">Применить</button></div>
-    </div>
+    <div id="editorPane" class="hidden"></div>
   </div>
 </div>
 
@@ -250,9 +291,13 @@ async function buildPublic(list, perTest) {
   return JSON.stringify({ generated:new Date().toISOString(), per_test:perTest, tests });
 }
 /*ENDCORE*/
-
+</script>
+<script>
 const $ = s => document.querySelector(s);
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+const TYPES = { input:'Ввод ответа', single:'Один вариант', multi:'Несколько вариантов', match:'Сопоставление' };
+const pad2 = n => String(n).padStart(2, '0');
+const classesText = c => (c && c.length) ? c.join(', ') + ' класс' : 'без класса';
 
 /* ───── ZIP / Excel ───── */
 const cleanEntries = z => Object.values(z.files).filter(f => !f.dir).map(f => ({ n:f.name, b:f.name.split('/').pop() }))
@@ -347,11 +392,12 @@ async function imagePaths(treeSha) {
   return (t.tree || []).filter(x => x.type === 'blob' && x.path.startsWith('docs/img/')).map(x => x.path);
 }
 
-/* Применить изменения: свежий список -> правки -> tests_src + docs одним коммитом */
+/* Применить изменения: свежий список -> правки -> tests_src + docs одним коммитом.
+   upserts: [{ test, used:Map(имя->байты новых картинок), keep:Set(имена уже лежащих на сайте картинок, которые оставить), replaceId, created }] */
 async function applyChanges({ upserts = [], removeIds = [] }, message) {
   const R = '/repos/' + GH.repo;
   const list = await fetchSource();
-  const files = [], deletes = new Set();
+  const files = [], deletes = new Set(), newIds = [];
   const ref = await (await gh(`${R}/git/ref/heads/${GH.branch}`)).json();
   const baseTree = (await (await gh(`${R}/git/commits/${ref.object.sha}`)).json()).tree.sha;
   const existingImgs = await imagePaths(baseTree);
@@ -359,12 +405,15 @@ async function applyChanges({ upserts = [], removeIds = [] }, message) {
   const dropImages = id => existingImgs.filter(p => p.startsWith(`docs/img/${id}/`));
   for (const u of upserts) {
     const id = u.replaceId != null ? u.replaceId : nextId++;
+    const prev = list.find(t => t.id === id);
     const entry = { id, title:u.test.title, subject:u.test.subject, time_limit:u.test.time_limit,
-      created:new Date().toISOString(), classes:u.test.classes, questions:u.test.questions };
+      created:(prev && prev.created) || u.created || new Date().toISOString(), classes:u.test.classes, questions:u.test.questions };
     const at = list.findIndex(t => t.id === id);
     if (at >= 0) list[at] = entry; else list.push(entry);
+    newIds.push(id);
     const keep = new Set();
-    for (const [name, bytes] of u.used) { const p = `docs/img/${id}/${name}`; keep.add(p); files.push({ path:p, content:bytes }); }
+    for (const [name, bytes] of (u.used || [])) { const p = `docs/img/${id}/${name}`; keep.add(p); files.push({ path:p, content:bytes }); }
+    for (const name of (u.keep || [])) keep.add(`docs/img/${id}/${name}`);
     dropImages(id).forEach(p => { if (!keep.has(p)) deletes.add(p); });
   }
   for (const id of removeIds) {
@@ -376,17 +425,22 @@ async function applyChanges({ upserts = [], removeIds = [] }, message) {
   files.push({ path:'tests_src/tests.json', content:JSON.stringify(list, null, 1) });
   files.push({ path:'docs/tests.json', content:await buildPublic(list, perTest) });
   await commit(message, files, [...deletes]);
+  upserts.forEach((u, i) => clearImgCache(newIds[i]));
+  removeIds.forEach(clearImgCache);
   return list;
 }
 
-/* ───── интерфейс ───── */
-let TESTS = [], PENDING = [];
+/* ───── состояние и общие помощники ───── */
+let TESTS = [], PENDING = [], SEL = new Set(), ED = null, edUid = 0;
 function status(text, kind) { const s = $('#status'); s.textContent = text; s.className = 'msg ' + (kind || ''); if (!text) s.classList.add('hidden'); }
 async function guarded(fn, busyText) {
   document.querySelectorAll('button').forEach(b => b.disabled = true);
   if (busyText) status(busyText);
-  try { await fn(); } catch (e) { status(e.message || String(e), 'error'); }
+  let ok = true;
+  try { await fn(); } catch (e) { ok = false; status(e.message || String(e), 'error'); window.scrollTo(0, 0); }
   document.querySelectorAll('button').forEach(b => b.disabled = false);
+  syncSel();
+  return ok;
 }
 
 function saveCreds(remember) {
@@ -414,32 +468,242 @@ $('#btnLogin').onclick = async () => {
   catch (e) { $('#loginErr').textContent = e.message; }
   $('#btnLogin').disabled = false;
 };
-$('#btnLogout').onclick = () => { try { sessionStorage.removeItem('qa'); localStorage.removeItem('qa'); } catch (e) {} GH.token = ''; location.reload(); };
+$('#btnLogout').onclick = () => { try { sessionStorage.removeItem('qa'); localStorage.removeItem('qa'); } catch (e) {} GH.token = ''; ED = null; location.reload(); };
+window.addEventListener('beforeunload', e => { if (ED && ED.dirty) { e.preventDefault(); e.returnValue = ''; } });
 
-async function refresh() { TESTS = await fetchSource(); renderList(); }
-function describe(t) {
-  return t.questions.map((q, i) => {
-    let a = q.type === 'match' ? q.pairs.map(p => p[0] + ' = ' + p[1]).join('; ') : q.answer.join('; ');
-    return `${i + 1}. [${TYPE_RU[q.type]}] ${q.text}\n    Ответ: ${a}` + (q.type === 'single' || q.type === 'multi' ? `\n    Варианты: ${q.options.join('; ')}` : '') + (q.image ? `\n    Картинка: ${q.image}` : '');
-  }).join('\n\n');
+async function refresh() { TESTS = await fetchSource(); SEL = new Set([...SEL].filter(id => TESTS.some(t => t.id === id))); renderList(); renderPreview(); }
+
+/* ───── картинки ───── */
+const MIME = { '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.gif':'image/gif', '.webp':'image/webp', '.bmp':'image/bmp' };
+const imgBytes = new Map(), blobUrls = new WeakMap();
+function blobUrl(bytes, name) {
+  let u = blobUrls.get(bytes);
+  if (!u) { u = URL.createObjectURL(new Blob([bytes], { type:MIME[ext(name)] || 'image/png' })); blobUrls.set(bytes, u); }
+  return u;
+}
+async function getImageBytes(id, name) {
+  const key = id + '/' + name;
+  if (imgBytes.has(key)) return imgBytes.get(key);
+  let bytes = null;
+  try {
+    const r = await fetch(`https://api.github.com/repos/${GH.repo}/contents/docs/img/${id}/${encodeURIComponent(name)}?ref=${encodeURIComponent(GH.branch)}&t=${Date.now()}`, {
+      cache:'no-store', headers:{ Authorization:'Bearer ' + GH.token, Accept:'application/vnd.github.raw+json', 'X-GitHub-Api-Version':'2022-11-28' } });
+    if (r.ok) bytes = new Uint8Array(await r.arrayBuffer());
+  } catch (e) {}
+  if (!bytes) {
+    const r = await fetch(`../img/${id}/${encodeURIComponent(name)}`, { cache:'no-store' });
+    if (!r.ok) throw new Error('Картинка «' + name + '» не найдена');
+    bytes = new Uint8Array(await r.arrayBuffer());
+  }
+  imgBytes.set(key, bytes); return bytes;
+}
+function clearImgCache(id) { for (const k of [...imgBytes.keys()]) if (k.startsWith(id + '/')) imgBytes.delete(k); }
+/* resolve(имя) -> Promise<url|null>: сначала только что выбранные картинки (local), потом лежащие на сайте */
+function repoResolver(id, local, existing) {
+  return async name => {
+    if (local && local.has(name)) return blobUrl(local.get(name), name);
+    if (id == null || (existing && !existing.has(name))) return null;
+    return blobUrl(await getImageBytes(id, name), name);
+  };
+}
+function putImage(im, resolve, name, fail) { resolve(name).then(u => { if (u) im.src = u; else fail(); }).catch(fail); }
+
+/* ───── правильные ответы: просмотр списком ───── */
+function describeQuestion(q, resolve) {
+  const box = el('div');
+  const t = el('pre', '', q.text); box.appendChild(t);
+  if (q.image) {
+    const im = el('img', 'thumb'); im.alt = '';
+    putImage(im, resolve, q.image, () => im.replaceWith(el('div', 'muted', 'Картинка: ' + q.image + ' (не удалось загрузить)')));
+    box.appendChild(im);
+  }
+  if (q.type === 'match') {
+    const ul = el('ul'); (q.pairs || []).forEach(p => ul.appendChild(el('li', 'ok', '✓ ' + p[0] + '  →  ' + p[1]))); box.appendChild(ul);
+  } else if (q.type === 'input') {
+    box.appendChild(el('div', 'ok', '✓ Допустимые ответы: ' + (q.answer || []).join('; ')));
+  } else {
+    const ul = el('ul');
+    (q.options || []).forEach(o => { const right = (q.answer || []).includes(o); const li = el('li', right ? 'ok' : '', (right ? '✓ ' : '○ ') + o); if (right) li.style.fontWeight = 'bold'; ul.appendChild(li); });
+    box.appendChild(ul);
+  }
+  box.appendChild(el('div', 'muted', 'Баллы: ' + (q.points == null ? 1 : q.points)));
+  return box;
+}
+function buildView(t) {
+  const box = el('div', 'qview'); box.style.marginTop = '10px';
+  const resolve = repoResolver(t.id);
+  const bar = el('div', 'tbar'); const ex = el('button', 'sec small', 'Развернуть все'); let open = false;
+  ex.onclick = () => { open = !open; box.querySelectorAll('details').forEach(d => d.open = open); ex.textContent = open ? 'Свернуть все' : 'Развернуть все'; };
+  bar.appendChild(ex); bar.appendChild(el('span', 'muted', `Время: ${t.time_limit ? t.time_limit + ' мин' : 'без ограничения'} · правильные ответы отмечены ✓`)); box.appendChild(bar);
+  t.questions.forEach((q, i) => {
+    const d = el('details'); d.appendChild(el('summary', '', `${i + 1}. [${TYPES[q.type]}] ${q.text.replace(/\s+/g, ' ').slice(0, 100)} (${q.points} б.)`));
+    let built = false; d.ontoggle = () => { if (d.open && !built) { built = true; d.appendChild(describeQuestion(q, resolve)); } };
+    box.appendChild(d);
+  });
+  return box;
+}
+
+/* ───── предпросмотр: как тест видят ученики ───── */
+function gradePlain(q, a) {
+  if (q.type === 'input') return !!norm(a) && (q.answer || []).some(x => canon(x) === canon(a));
+  if (q.type === 'single') return !!a && (q.answer || []).length > 0 && canon(a) === canon(q.answer[0]);
+  if (q.type === 'multi') return Array.isArray(a) && a.length > 0 && a.map(canon).sort().join('\n') === (q.answer || []).map(canon).sort().join('\n');
+  const pairs = q.pairs || [];
+  return !!a && pairs.length > 0 && pairs.every(p => a[p[0]] && canon(a[p[0]]) === canon(p[1]));
+}
+function openPreview(t, resolve) {
+  const old = $('#pvOverlay'); if (old) old.remove();
+  const qs = t.questions || [], perTest = Math.max(1, parseInt($('#perTest').value, 10) || 5);
+  let showKey = false, phone = false, checked = false; const answers = {};
+  const ov = el('div', 'pvov'); ov.id = 'pvOverlay';
+  const close = () => { ov.remove(); document.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
+  const onKey = e => { if (e.key === 'Escape') close(); };
+  document.addEventListener('keydown', onKey); document.body.style.overflow = 'hidden';
+
+  const top = el('div', 'pvtop');
+  top.appendChild(el('b', '', 'Предпросмотр: как видят ученики'));
+  const bPc = el('button', 'sec on', 'Компьютер'), bPh = el('button', 'sec', 'Телефон');
+  const setMode = ph => { phone = ph; bPc.classList.toggle('on', !ph); bPh.classList.toggle('on', ph); frame.classList.toggle('phone', ph); };
+  bPc.onclick = () => setMode(false); bPh.onclick = () => setMode(true);
+  top.appendChild(bPc); top.appendChild(bPh);
+  const lk = el('label'); const ck = el('input'); ck.type = 'checkbox'; ck.id = 'pvKey'; ck.onchange = () => { showKey = ck.checked; draw(); };
+  lk.appendChild(ck); lk.appendChild(el('span', '', 'Показать правильные ответы')); top.appendChild(lk);
+  top.appendChild(el('span', 'sp'));
+  const x = el('button', '', 'Закрыть ✕'); x.onclick = close; top.appendChild(x);
+  ov.appendChild(top);
+  ov.appendChild(el('div', 'pvnote muted', `Ответы здесь не сохраняются. Каждому ученику достаётся ${Math.min(perTest, qs.length)} случайных вопросов из ${qs.length} (настройка «Вопросов у ученика в каждом тесте»). В предпросмотре показаны все вопросы подряд.`));
+  const frame = el('div', 'pv'); ov.appendChild(frame);
+
+  function draw() {
+    frame.innerHTML = '';
+    const head = el('div', 'card'); head.appendChild(el('h1', '', t.title || 'Без названия'));
+    head.appendChild(el('div', 'muted', 'Вопросов: ' + qs.length + '. Ответьте на все вопросы и нажмите «Завершить и проверить».')); frame.appendChild(head);
+    const box = el('div', 'card'); frame.appendChild(box);
+    qs.forEach((q, i) => {
+      const ok = checked ? gradePlain(q, answers[i]) : null;
+      const w = el('div', 'q' + (checked ? (ok ? ' res-ok' : ' res-bad') : '')); w.appendChild(el('div', 'qt', (i + 1) + '. ' + q.text));
+      if (q.image) {
+        const im = el('img', 'qimg'); im.alt = ''; w.appendChild(im);
+        putImage(im, resolve, q.image, () => im.replaceWith(el('div', 'noimg', '🖼 Картинка: ' + q.image + ' — не удалось загрузить')));
+      }
+      const ans = q.answer || [], saved = answers[i];
+      if (q.type === 'input') {
+        const inp = el('input'); inp.type = 'text'; inp.placeholder = 'Ваш ответ'; inp.autocomplete = 'off'; inp.style.width = '100%';
+        if (typeof saved === 'string') inp.value = saved; inp.oninput = () => { answers[i] = inp.value; }; w.appendChild(inp);
+        if (showKey) w.appendChild(el('div', 'key', '✓ Допустимые ответы: ' + ans.join('; ')));
+      } else if (q.type === 'single' || q.type === 'multi') {
+        const multi = q.type === 'multi';
+        if (multi) w.appendChild(el('div', 'muted', 'Можно выбрать несколько вариантов'));
+        (q.options || []).forEach(o => {
+          const right = showKey && ans.includes(o);
+          const lab = el('label', 'opt' + (right ? ' right' : ''));
+          const inp = el('input'); inp.type = multi ? 'checkbox' : 'radio'; inp.name = 'pv_' + i; inp.value = o;
+          inp.checked = multi ? (Array.isArray(saved) && saved.includes(o)) : saved === o;
+          inp.onchange = () => { answers[i] = multi ? [...w.querySelectorAll('input:checked')].map(z => z.value) : o; };
+          lab.appendChild(inp); lab.appendChild(el('span', '', o + (right ? '  ✓' : ''))); w.appendChild(lab);
+        });
+      } else if (q.type === 'match') {
+        w.appendChild(el('div', 'muted', 'Выберите пару для каждого пункта'));
+        const pairs = q.pairs || [], rights = pairs.map(p => p[1]).sort((a, b) => String(a).localeCompare(String(b), 'ru'));
+        const cur = (saved && typeof saved === 'object') ? saved : {};
+        pairs.forEach(p => {
+          const row = el('div', 'mrow'); row.appendChild(el('div', 'l', p[0]));
+          const sel = el('select'); const o0 = el('option', '', '— выберите —'); o0.value = ''; sel.appendChild(o0);
+          rights.forEach(r => { const o = el('option', '', r); o.value = r; sel.appendChild(o); });
+          sel.value = cur[p[0]] || '';
+          sel.onchange = () => { answers[i] = Object.assign({}, answers[i] || {}, { [p[0]]: sel.value }); };
+          row.appendChild(sel); w.appendChild(row);
+          if (showKey) w.appendChild(el('div', 'key', '✓ ' + p[0] + ' → ' + p[1]));
+        });
+      }
+      if (checked) w.appendChild(el('div', 'verdict', ok ? '✓ Верно' : '✗ Неверно'));
+      box.appendChild(w);
+    });
+    const sub = el('div', 'card');
+    if (checked) { sub.appendChild(el('div', 'big', 'Верно: ' + qs.filter((q, i) => gradePlain(q, answers[i])).length + ' из ' + qs.length)); sub.appendChild(el('div', 'muted', 'Ученик увидит только отметки «верно/неверно», без правильных ответов.')); }
+    const b = el('button', '', 'Завершить и проверить'); b.onclick = () => { checked = true; draw(); frame.scrollIntoView(); };
+    const r = el('button', 'sec', 'Сбросить ответы'); r.style.marginLeft = '8px'; r.onclick = () => { for (const k in answers) delete answers[k]; checked = false; draw(); };
+    sub.appendChild(b); sub.appendChild(r); frame.appendChild(sub);
+  }
+  draw(); setMode(false);
+  document.body.appendChild(ov);
+}
+
+/* ───── список тестов ───── */
+function syncSel() {
+  const n = SEL.size;
+  $('#selInfo').textContent = n ? 'Выбрано: ' + n : '';
+  $('#btnDlSel').disabled = !n; $('#btnDelSel').disabled = !n;
+}
+function visibleTests() {
+  const c = $('#fClass').value, q = $('#fText').value.trim().toLowerCase();
+  return TESTS.filter(t => (!c || (c === '__none' ? !t.classes.length : t.classes.map(String).includes(c))) && (!q || t.title.toLowerCase().includes(q) || (t.subject || '').toLowerCase().includes(q)))
+    .sort((a, b) => (Number(a.classes[0]) || 99) - (Number(b.classes[0]) || 99) || a.title.localeCompare(b.title, 'ru'));
+}
+function fillClassFilter() {
+  const sel = $('#fClass'), keep = sel.value, set = new Set(); let none = false;
+  TESTS.forEach(t => { if (t.classes.length) t.classes.forEach(c => set.add(String(c))); else none = true; });
+  sel.innerHTML = '';
+  const add = (v, txt) => { const o = el('option', '', txt); o.value = v; sel.appendChild(o); };
+  add('', 'Все классы'); [...set].sort((a, b) => a - b).forEach(c => add(c, c + ' класс')); if (none) add('__none', 'Без класса');
+  sel.value = [...sel.options].some(o => o.value === keep) ? keep : '';
 }
 function renderList() {
+  fillClassFilter();
   const box = $('#list'); box.innerHTML = '';
-  if (!TESTS.length) { box.appendChild(el('div', 'muted', 'Тестов пока нет — загрузите первый файл.')); return; }
-  TESTS.slice().sort((a, b) => (a.classes[0] || 99) - (b.classes[0] || 99) || a.title.localeCompare(b.title, 'ru')).forEach(t => {
-    const it = el('div', 'item');
-    it.appendChild(el('b', '', t.title));
-    it.appendChild(el('div', 'muted', `${t.classes.length ? t.classes.join(', ') + ' класс' : 'без класса'} · ${t.subject || 'без предмета'} · вопросов: ${t.questions.length}`));
-    const view = el('pre', 'view hidden'); view.textContent = describe(t);
-    const bv = el('button', 'sec small', 'Просмотр'); bv.onclick = () => view.classList.toggle('hidden');
-    const bd = el('button', 'sec small', 'Скачать'); bd.onclick = () => guarded(() => downloadTest(t), 'Готовим файл…').then(() => status(''));
-    const bx = el('button', 'danger small', 'Удалить');
-    bx.onclick = () => { if (confirm(`Удалить тест «${t.title}» с сайта?`)) guarded(async () => { TESTS = await applyChanges({ removeIds:[t.id] }, `Удалён тест: ${t.title}`); renderList(); status('Тест удалён. Сайт обновится через 1–2 минуты.', 'ok'); }, 'Удаляем…'); };
-    it.append(bv, bd, bx, view); box.appendChild(it);
+  if (!TESTS.length) { box.appendChild(el('div', 'muted', 'Тестов пока нет — загрузите первый файл или создайте тест.')); syncSel(); return; }
+  const list = visibleTests();
+  if (!list.length) box.appendChild(el('div', 'muted', 'По фильтру ничего не найдено.'));
+  list.forEach(t => {
+    const it = el('div', 'item'), row = el('div', 'irow'); it.appendChild(row);
+    const ck = el('input'); ck.type = 'checkbox'; ck.checked = SEL.has(t.id); ck.onchange = () => { ck.checked ? SEL.add(t.id) : SEL.delete(t.id); syncSel(); };
+    row.appendChild(ck);
+    const g = el('div', 'grow'); row.appendChild(g);
+    g.appendChild(el('b', '', t.title));
+    g.appendChild(el('div', 'muted', `${classesText(t.classes)} · ${t.subject || 'без предмета'} · вопросов: ${t.questions.length}` + (t.time_limit ? ` · ${t.time_limit} мин` : '')));
+    const view = el('div', 'hidden'); let built = false;
+    const btns = el('div', 'btns');
+    const mk = (txt, cls, fn) => { const b = el('button', cls + ' small', txt); b.style.margin = '0'; b.onclick = fn; btns.appendChild(b); return b; };
+    mk('Просмотр', 'sec', () => { if (!built) { view.appendChild(buildView(t)); built = true; } view.classList.toggle('hidden'); });
+    mk('Предпросмотр', 'sec', () => openPreview(t, repoResolver(t.id)));
+    mk('Редактировать', '', () => startEditor({ id:t.id, test:t, existing:new Set(t.questions.map(q => q.image).filter(Boolean)), created:t.created }));
+    mk('Копия', 'sec', () => duplicateTest(t));
+    mk('Скачать', 'sec', () => guarded(() => downloadTests([t]), 'Готовим файл…').then(ok => { if (ok) status(''); }));
+    mk('Удалить', 'danger', () => deleteTests([t]));
+    g.appendChild(btns); g.appendChild(view);
+    box.appendChild(it);
   });
+  const vis = list.map(t => t.id); $('#selAll').checked = vis.length > 0 && vis.every(id => SEL.has(id));
+  syncSel();
 }
+$('#fClass').onchange = $('#fText').oninput = renderList;
+$('#selAll').onchange = () => { const on = $('#selAll').checked; visibleTests().forEach(t => on ? SEL.add(t.id) : SEL.delete(t.id)); renderList(); };
+$('#btnDlSel').onclick = () => { const l = TESTS.filter(t => SEL.has(t.id)); guarded(() => downloadTests(l), 'Готовим архив…').then(ok => { if (ok) status('Архив скачан. Его можно целиком загрузить обратно на этой же странице.', 'ok'); }); };
+$('#btnDelSel').onclick = () => deleteTests(TESTS.filter(t => SEL.has(t.id)));
 
-async function downloadTest(t) {
+function deleteTests(list) {
+  if (!list.length) return;
+  const q = list.length === 1 ? `Удалить тест «${list[0].title}» с сайта?` : `Удалить тесты с сайта (${list.length} шт.)?\n\n` + list.slice(0, 15).map(t => '• ' + t.title).join('\n') + (list.length > 15 ? '\n…' : '');
+  if (!confirm(q)) return;
+  guarded(async () => {
+    TESTS = await applyChanges({ removeIds:list.map(t => t.id) }, list.length === 1 ? `Удалён тест: ${list[0].title}` : `Удалено тестов: ${list.length}`);
+    list.forEach(t => SEL.delete(t.id)); renderList();
+    status(`Удалено тестов: ${list.length}. Сайт обновится через 1–2 минуты.`, 'ok');
+  }, 'Удаляем…');
+}
+function duplicateTest(t) {
+  guarded(async () => {
+    const used = new Map();
+    for (const n of new Set(t.questions.map(q => q.image).filter(Boolean))) used.set(n, await getImageBytes(t.id, n));
+    const copy = JSON.parse(JSON.stringify(t)); copy.title = t.title + ' (копия)';
+    TESTS = await applyChanges({ upserts:[{ test:copy, used, replaceId:null }] }, 'Копия теста: ' + t.title);
+    renderList(); status('Копия создана. Сайт обновится через 1–2 минуты.', 'ok');
+  }, 'Копируем…');
+}
+$('#btnPer').onclick = () => guarded(async () => { TESTS = await applyChanges({}, 'Число вопросов у ученика'); status('Сохранено. Сайт обновится через 1–2 минуты.', 'ok'); }, 'Сохраняем…');
+
+/* ───── скачивание ───── */
+function testToXlsx(t) {
   const rows = [['Тип', 'Вопрос', 'Картинка', 'Варианты', 'Правильный ответ', 'Баллы']];
   t.questions.forEach(q => rows.push([TYPE_RU[q.type], q.text, q.image || '',
     q.type === 'match' ? q.pairs.map(p => p[0] + '=' + p[1]).join('; ') : q.options.join('; '),
@@ -447,55 +711,353 @@ async function downloadTest(t) {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Название', t.title], ['Предмет', t.subject || ''], ['Классы', (t.classes || []).join(', ')], ['Время', t.time_limit || 0]]), 'Настройки');
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Вопросы');
-  const xlsx = XLSX.write(wb, { bookType:'xlsx', type:'array' });
-  const base = t.title.replace(/[^\p{L}\p{N}_.\- ]/gu, '_').slice(0, 60) || 'test';
-  const imgs = [...new Set(t.questions.map(q => q.image).filter(Boolean))];
-  let blob, name;
-  if (!imgs.length) { blob = new Blob([xlsx], { type:'application/octet-stream' }); name = base + '.xlsx'; }
-  else {
-    const z = new JSZip(); z.file(base + '.xlsx', xlsx);
-    for (const n of imgs) { const r = await fetch(`../img/${t.id}/${encodeURIComponent(n)}`, { cache:'no-store' }); if (r.ok) z.file(n, await r.arrayBuffer()); }
-    blob = await z.generateAsync({ type:'blob' }); name = base + '.zip';
+  return XLSX.write(wb, { bookType:'xlsx', type:'array' });
+}
+const fileSafe = s => String(s || '').replace(/[^\p{L}\p{N}_.\- ]/gu, '_').trim().slice(0, 60) || 'test';
+async function downloadTests(list) {
+  const missing = []; let blob, name;
+  const imagesOf = async t => { const m = new Map(); for (const n of new Set(t.questions.map(q => q.image).filter(Boolean))) { try { m.set(n, await getImageBytes(t.id, n)); } catch (e) { missing.push(n); } } return m; };
+  if (list.length === 1) {
+    const t = list[0], base = fileSafe(t.title), xlsx = testToXlsx(t), imgs = await imagesOf(t);
+    if (!imgs.size) { blob = new Blob([xlsx], { type:'application/octet-stream' }); name = base + '.xlsx'; }
+    else { const z = new JSZip(); z.file(base + '.xlsx', xlsx); imgs.forEach((b, n) => z.file(n, b)); blob = await z.generateAsync({ type:'blob' }); name = base + '.zip'; }
+  } else {
+    const z = new JSZip();
+    for (const [i, t] of list.entries()) {
+      const d = z.folder(pad2(i + 1) + '_' + fileSafe(t.title));
+      d.file(fileSafe(t.title) + '.xlsx', testToXlsx(t));
+      (await imagesOf(t)).forEach((b, n) => d.file(n, b));
+    }
+    blob = await z.generateAsync({ type:'blob' }); name = 'tests_' + new Date().toISOString().slice(0, 10) + '.zip';
   }
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  if (missing.length) status('Не удалось получить картинки: ' + missing.join(', '), 'error');
 }
 
-/* загрузка */
-$('#files').onchange = () => guarded(async () => {
-  PENDING = []; $('#preview').innerHTML = ''; $('#btnSave').classList.add('hidden');
-  for (const f of $('#files').files) {
-    const data = new Uint8Array(await f.arrayBuffer());
-    for (const e of await expandUpload(f.name, data)) { const r = await readOne(e.name, e.data); PENDING.push({ label:e.label, ...r, replaceId:null }); }
+/* ───── массовая загрузка ───── */
+const JUNK = n => /(^|\/)(\.DS_Store|Thumbs\.db|desktop\.ini)$/i.test(n) || /(^|\/)~\$/.test(n);
+async function ingest(files) {
+  const folders = new Map(), loose = [], looseImgs = [], jobs = [];
+  for (const f of files) {
+    const path = String(f._path || f.webkitRelativePath || f.name).replace(/\\/g, '/').replace(/^\//, '');
+    if (JUNK(path)) continue;
+    const x = ext(path);
+    if (path.includes('/')) { const top = path.split('/')[0]; if (!folders.has(top)) folders.set(top, []); folders.get(top).push({ f, rel:path.split('/').slice(1).join('/') }); }
+    else if (x === '.xlsx' || x === '.zip') loose.push(f);
+    else if (IMAGE_EXT.includes(x)) looseImgs.push(f);
   }
-  renderPreview(); status('');
-}, 'Читаем файлы…');
+  for (const [top, items] of folders) {
+    const z = new JSZip(); let any = false;
+    for (const { f, rel } of items) { const x = ext(rel); if (x === '.xlsx' || x === '.zip' || IMAGE_EXT.includes(x)) { z.file(rel, await f.arrayBuffer()); any = true; } }
+    if (any) jobs.push({ name:top + '.zip', label:'Папка «' + top + '»', data:await z.generateAsync({ type:'uint8array' }) });
+  }
+  for (const f of loose) {
+    let data = new Uint8Array(await f.arrayBuffer()), name = f.name;
+    if (ext(name) === '.xlsx' && looseImgs.length) {
+      const z = new JSZip(); z.file(name, data); for (const im of looseImgs) z.file(im.name, await im.arrayBuffer());
+      data = await z.generateAsync({ type:'uint8array' }); name += '.zip';
+    }
+    jobs.push({ name, label:f.name, data });
+  }
+  if (looseImgs.length && !loose.some(f => ext(f.name) === '.xlsx')) status('Картинки без Excel-файла пропущены: выберите их вместе с .xlsx, положите в ZIP или в папку.', 'error');
+  let n = 0;
+  for (const job of jobs) {
+    status(`Читаем файлы… (${++n} из ${jobs.length})`);
+    try {
+      const parts = await expandUpload(job.name, job.data);
+      for (const e of parts) { const r = await readOne(e.name, e.data); PENDING.push({ label:parts.length === 1 ? job.label : e.label.split(job.name).join(job.label), ...r, replaceId:null, skip:false }); }
+    } catch (err) { PENDING.push({ label:job.label, test:null, errors:['Ошибка чтения: ' + err.message], used:new Map() }); }
+  }
+  autoTargets(); renderPreview();
+  const okN = PENDING.filter(p => p.test).length;
+  status(PENDING.length ? `Прочитано файлов с тестами: ${PENDING.length}, без ошибок: ${okN}. Проверьте список и нажмите «Сохранить на сайт».` : '', PENDING.length ? '' : undefined);
+}
+/* тест с таким же названием на сайте -> «Заменить», иначе «Добавить как новый»; два файла не заменяют один тест */
+function autoTargets() {
+  const taken = new Set(PENDING.filter(p => p.test && !p.skip && p.replaceId != null).map(p => p.replaceId));
+  PENDING.forEach(p => {
+    if (!p.test || p.touched) return;
+    const same = TESTS.find(t => t.title.trim().toLowerCase() === p.test.title.trim().toLowerCase());
+    if (same && !taken.has(same.id)) { p.replaceId = same.id; taken.add(same.id); } else if (p.replaceId == null || p.replaceId === undefined) p.replaceId = null;
+  });
+}
 function renderPreview() {
   const box = $('#preview'); box.innerHTML = '';
+  PENDING.forEach(p => { if (p.replaceId != null && !TESTS.some(t => t.id === p.replaceId)) p.replaceId = null; });
+  const titles = {}; PENDING.forEach(p => { if (p.test) { const k = p.test.title.trim().toLowerCase(); titles[k] = (titles[k] || 0) + 1; } });
   PENDING.forEach(p => {
-    const it = el('div', 'item ' + (p.test ? 'good' : 'bad')); it.appendChild(el('b', '', p.label));
+    const it = el('div', 'item ' + (p.test ? 'good' : 'bad') + (p.skip ? ' skip' : '')); it.appendChild(el('b', '', p.label));
     if (!p.test) { p.errors.forEach(e => it.appendChild(el('div', 'bad-t', e))); }
     else {
-      it.appendChild(el('div', 'good-t', `✓ ${p.test.title} · ${p.test.classes.length ? p.test.classes.join(', ') + ' класс' : 'без класса'} · вопросов: ${p.test.questions.length}`));
-      const sel = el('select'); const o0 = el('option', '', 'Добавить как новый тест'); o0.value = ''; sel.appendChild(o0);
+      const imgs = p.used.size ? ` · картинок: ${p.used.size}` : '';
+      it.appendChild(el('div', 'good-t', `✓ ${p.test.title} · ${classesText(p.test.classes)} · вопросов: ${p.test.questions.length}${imgs}`));
+      if (titles[p.test.title.trim().toLowerCase()] > 1) it.appendChild(el('div', 'warn-t', 'В этой загрузке есть ещё тест с таким же названием.'));
+      const sel = el('select'); sel.style.marginTop = '8px';
+      const o0 = el('option', '', 'Добавить как новый тест'); o0.value = 'new'; sel.appendChild(o0);
       TESTS.forEach(t => { const o = el('option', '', 'Заменить: ' + t.title); o.value = t.id; sel.appendChild(o); });
-      const same = TESTS.find(t => t.title.trim().toLowerCase() === p.test.title.trim().toLowerCase());
-      if (same) { sel.value = same.id; p.replaceId = same.id; }
-      sel.onchange = () => { p.replaceId = sel.value === '' ? null : Number(sel.value); };
-      sel.style.marginTop = '8px'; it.appendChild(sel);
+      const o1 = el('option', '', 'Пропустить (не загружать)'); o1.value = 'skip'; sel.appendChild(o1);
+      sel.value = p.skip ? 'skip' : (p.replaceId == null ? 'new' : String(p.replaceId));
+      sel.onchange = () => { p.touched = true; p.skip = sel.value === 'skip'; p.replaceId = (sel.value === 'new' || p.skip) ? null : Number(sel.value); renderPreview(); };
+      it.appendChild(sel);
+      const bt = el('div', 'btns');
+      const pv = el('button', 'sec small', 'Предпросмотр'); pv.onclick = () => openPreview(p.test, repoResolver(null, p.used));
+      const ed = el('button', 'sec small', 'Править перед сохранением'); ed.onclick = () => startEditor({ id:p.replaceId, test:p.test, local:new Map(p.used), pending:p });
+      bt.append(pv, ed); it.appendChild(bt);
     }
-    box.appendChild(it);
+    const rm = el('button', 'sec small', 'Убрать из списка'); rm.style.marginTop = '8px'; rm.onclick = () => { PENDING = PENDING.filter(x => x !== p); renderPreview(); };
+    it.appendChild(rm); box.appendChild(it);
   });
-  $('#btnSave').classList.toggle('hidden', !PENDING.some(p => p.test));
-  const n = PENDING.filter(p => p.test).length; $('#btnSave').textContent = 'Сохранить на сайт (' + n + ')';
+  const n = PENDING.filter(p => p.test && !p.skip).length;
+  $('#btnSave').classList.toggle('hidden', !n); $('#btnSave').textContent = 'Сохранить на сайт (' + n + ')';
+  $('#btnClear').classList.toggle('hidden', !PENDING.length);
 }
-$('#btnSave').onclick = () => guarded(async () => {
-  const ok = PENDING.filter(p => p.test); if (!ok.length) return;
-  TESTS = await applyChanges({ upserts:ok.map(p => ({ test:p.test, used:p.used, replaceId:p.replaceId })) },
-    ok.length === 1 ? 'Тест: ' + ok[0].test.title : `Загружено тестов: ${ok.length}`);
-  PENDING = []; $('#preview').innerHTML = ''; $('#btnSave').classList.add('hidden'); $('#files').value = '';
-  renderList(); status(`Готово: сохранено тестов — ${ok.length}. Сайт обновится через 1–2 минуты.`, 'ok');
-}, 'Сохраняем в GitHub…');
-$('#btnPer').onclick = () => guarded(async () => { TESTS = await applyChanges({}, 'Число вопросов у ученика'); status('Сохранено. Сайт обновится через 1–2 минуты.', 'ok'); }, 'Сохраняем…');
+$('#btnSave').onclick = () => {
+  const ok = PENDING.filter(p => p.test && !p.skip); if (!ok.length) return;
+  const ids = ok.map(p => p.replaceId).filter(x => x != null), dup = ids.find((x, i) => ids.indexOf(x) !== i);
+  if (dup != null) { status('Два файла заменяют один и тот же тест («' + (TESTS.find(t => t.id === dup) || {}).title + '»). Для одного из них выберите «Добавить как новый» или «Пропустить».', 'error'); window.scrollTo(0, 0); return; }
+  guarded(async () => {
+    TESTS = await applyChanges({ upserts:ok.map(p => ({ test:p.test, used:p.used, replaceId:p.replaceId })) },
+      ok.length === 1 ? 'Тест: ' + ok[0].test.title : `Загружено тестов: ${ok.length}`);
+    PENDING = PENDING.filter(p => !p.test); /* сохранённые и пропущенные убираем, файлы с ошибками остаются на виду */
+    renderPreview(); renderList();
+    status(`Готово: сохранено тестов — ${ok.length}. Сайт обновится через 1–2 минуты.`, 'ok');
+  }, 'Сохраняем в GitHub…');
+};
+const drop = $('#drop');
+drop.onclick = () => $('#files').click();
+drop.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#files').click(); } };
+$('#btnFolder').onclick = () => $('#folder').click();
+$('#btnClear').onclick = () => { PENDING = []; renderPreview(); status(''); };
+drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
+drop.ondragleave = () => drop.classList.remove('over');
+function walkEntry(entry, out, path) {
+  return new Promise(res => {
+    if (entry.isFile) entry.file(f => { f._path = path + f.name; out.push(f); res(); }, () => res());
+    else {
+      const r = entry.createReader(), all = [];
+      const read = () => r.readEntries(async es => { if (!es.length) { for (const e of all) await walkEntry(e, out, path + entry.name + '/'); res(); } else { all.push(...es); read(); } }, () => res());
+      read();
+    }
+  });
+}
+drop.ondrop = e => {
+  e.preventDefault(); drop.classList.remove('over');
+  /* DataTransferItem нужно превратить в entries синхронно, пока не закончился обработчик события */
+  const items = [...(e.dataTransfer.items || [])], files = [...e.dataTransfer.files];
+  const entries = items.map(it => (it.webkitGetAsEntry ? it.webkitGetAsEntry() : null)).filter(Boolean);
+  guarded(async () => {
+    let list = files;
+    if (entries.length) { list = []; for (const en of entries) await walkEntry(en, list, ''); }
+    await ingest(list);
+  }, 'Читаем файлы…');
+};
+$('#files').onchange = () => { const l = [...$('#files').files]; $('#files').value = ''; guarded(() => ingest(l), 'Читаем файлы…'); };
+$('#folder').onchange = () => { const l = [...$('#folder').files]; $('#folder').value = ''; guarded(() => ingest(l), 'Читаем папку…'); };
+
+/* ───── редактор теста ───── */
+function toEd(q) {
+  const e = { uid:++edUid, type:q.type, text:q.text || '', image:q.image || '', points:q.points == null ? 1 : q.points, opts:[], inp:'', pairs:[] };
+  if (q.type === 'single' || q.type === 'multi') e.opts = (q.options || []).map(o => ({ t:o, ok:(q.answer || []).includes(o) }));
+  if (q.type === 'input') e.inp = (q.answer || []).join('; ');
+  if (q.type === 'match') e.pairs = (q.pairs || []).map(p => [p[0], p[1]]);
+  return e;
+}
+function blankQ(type) {
+  const e = { uid:++edUid, type, text:'', image:'', points:1, opts:[], inp:'', pairs:[] };
+  if (type === 'single' || type === 'multi') e.opts = [{ t:'', ok:false }, { t:'', ok:false }];
+  if (type === 'match') e.pairs = [['', ''], ['', '']];
+  return e;
+}
+function changeType(e, type) {
+  const was = e.type; e.type = type;
+  if (type === 'single' || type === 'multi') {
+    if (was !== 'single' && was !== 'multi') e.opts = [{ t:'', ok:false }, { t:'', ok:false }];
+    else if (type === 'single') { let seen = false; e.opts.forEach(o => { if (o.ok) { if (seen) o.ok = false; seen = true; } }); }
+  }
+  if (type === 'match' && !e.pairs.length) e.pairs = [['', ''], ['', '']];
+}
+function cloneEd(e) { return { ...e, uid:++edUid, opts:e.opts.map(o => ({ ...o })), pairs:e.pairs.map(p => [...p]) }; }
+function startEditor(o) {
+  const t = o.test || {};
+  ED = { id:o.id == null ? null : o.id, title:t.title || '', subject:t.subject || '', classes:(t.classes || []).join(', '), time:t.time_limit || 0,
+    qs:(t.questions || []).map(toEd), local:o.local || new Map(), existing:o.existing || new Set(), pending:o.pending || null, created:o.created, dirty:false };
+  if (!ED.qs.length) ED.qs.push(blankQ('single'));
+  $('#home').classList.add('hidden'); $('#editorPane').classList.remove('hidden');
+  renderEditor(); ED.dirty = false; window.scrollTo(0, 0);
+}
+function closeEditor(force) {
+  if (!force && ED && ED.dirty && !confirm('Закрыть без сохранения? Внесённые изменения пропадут.')) return;
+  ED = null; $('#editorPane').classList.add('hidden'); $('#editorPane').innerHTML = ''; $('#home').classList.remove('hidden'); window.scrollTo(0, 0);
+}
+function field(label, input) { const d = el('div'); d.appendChild(el('label', '', label)); d.appendChild(input); return d; }
+function inp(type, value, on) { const i = el('input'); i.type = type; i.value = value == null ? '' : value; i.oninput = () => { ED.dirty = true; on(i.value); }; return i; }
+const edResolver = () => async name => {
+  if (ED.local.has(name)) return blobUrl(ED.local.get(name), name);
+  if (ED.id != null && ED.existing.has(name)) return blobUrl(await getImageBytes(ED.id, name), name);
+  return null;
+};
+function renderEditor() {
+  const box = $('#editorPane'); box.innerHTML = '';
+  const card = el('div', 'card'); box.appendChild(card);
+  const target = ED.pending ? (ED.id != null ? 'Этот тест при сохранении заменит на сайте: «' + ((TESTS.find(t => t.id === ED.id) || {}).title || ED.id) + '».' : 'Этот тест будет добавлен на сайт как новый.')
+    : (ED.id != null ? 'Изменения заменят этот тест на сайте.' : 'Новый тест — после сохранения появится на сайте.');
+  const h = el('div', 'top'); h.appendChild(el('h2', '', ED.id == null && !ED.pending ? 'Новый тест' : 'Редактирование теста')); card.appendChild(h);
+  card.appendChild(el('div', 'muted', target));
+  const g = el('div', 'grid');
+  g.appendChild(field('Название', inp('text', ED.title, v => ED.title = v)));
+  g.appendChild(field('Предмет', inp('text', ED.subject, v => ED.subject = v)));
+  g.appendChild(field('Классы (например: 7 или 5-7 или 7, 8; пусто — «без класса»)', inp('text', ED.classes, v => ED.classes = v)));
+  const tf = inp('number', ED.time, v => ED.time = v); tf.min = 0;
+  g.appendChild(field('Время, мин (0 — без ограничения)', tf));
+  card.appendChild(g);
+  const err = el('div', 'err'); err.id = 'edErr';
+  const list = el('div'); ED.list = list;
+  const mkBar = (sticky) => {
+    const bar = el('div', 'tbar' + (sticky ? ' edbar' : ''));
+    const s = el('button', '', 'Сохранить на сайт'); s.onclick = saveEditor;
+    const p = el('button', 'sec', 'Предпросмотр'); p.title = 'Как тест увидят ученики (с учётом несохранённых правок)'; p.onclick = () => { const c = collectEditor(); openPreview({ title:c.payload.title || 'Без названия', time_limit:c.payload.time_limit, questions:c.payload.questions }, edResolver()); };
+    const c = el('button', 'sec', 'Закрыть'); c.onclick = () => closeEditor();
+    bar.append(s, p, c); return bar;
+  };
+  card.appendChild(mkBar(false)); card.appendChild(err); card.appendChild(list);
+  const add = el('div', 'tbar'); add.appendChild(el('b', '', 'Добавить вопрос:'));
+  Object.keys(TYPES).forEach(k => { const b = el('button', 'sec mini', '+ ' + TYPES[k]); b.onclick = () => { ED.qs.push(blankQ(k)); redrawList(); ED.list.lastChild.scrollIntoView({ behavior:'smooth', block:'center' }); }; add.appendChild(b); });
+  card.appendChild(add); card.appendChild(mkBar(true));
+  redrawList();
+}
+function redrawList() { ED.dirty = true; ED.list.innerHTML = ''; ED.qs.forEach((e, i) => ED.list.appendChild(qCard(e, i))); }
+function pickImage(e, file) {
+  const x = ext(file.name);
+  if (!IMAGE_EXT.includes(x)) { alert('Поддерживаются картинки: ' + IMAGE_EXT.join(', ')); return Promise.resolve(); }
+  return file.arrayBuffer().then(buf => {
+    const bytes = new Uint8Array(buf), base = safeImageName(file.name), stem = base.slice(0, base.length - x.length);
+    const taken = () => { const s = new Set(); ED.existing.forEach(n => s.add(n.toLowerCase())); ED.local.forEach((v, n) => s.add(n.toLowerCase())); return s; };
+    const same = [...ED.local].find(([n, b]) => b.length === bytes.length && b.every((v, i) => v === bytes[i]));
+    let name;
+    if (same) name = same[0];
+    else { name = base; let k = 2; while (taken().has(name.toLowerCase())) name = `${stem}_${k++}${x}`; ED.local.set(name, bytes); }
+    e.image = name;
+  });
+}
+function qCard(e, i) {
+  const card = el('div', 'qcard');
+  const redraw = () => { ED.dirty = true; card.replaceWith(qCard(e, ED.qs.indexOf(e))); };
+  const head = el('div', 'qhead');
+  head.appendChild(el('b', '', (i + 1) + '.'));
+  const ts = el('select'); Object.keys(TYPES).forEach(k => { const o = el('option', '', TYPES[k]); o.value = k; ts.appendChild(o); });
+  ts.value = e.type; ts.onchange = () => { changeType(e, ts.value); redraw(); }; head.appendChild(ts);
+  head.appendChild(el('span', 'muted', 'Баллы:'));
+  const pt = inp('number', e.points, v => e.points = v); pt.min = 0; pt.step = 'any'; head.appendChild(pt);
+  head.appendChild(el('span', 'sp'));
+  const mv = (d) => { const k = ED.qs.indexOf(e), n = k + d; if (n < 0 || n >= ED.qs.length) return; ED.qs.splice(k, 1); ED.qs.splice(n, 0, e); redrawList(); };
+  const up = el('button', 'sec mini', '↑'); up.title = 'Выше'; up.onclick = () => mv(-1);
+  const dn = el('button', 'sec mini', '↓'); dn.title = 'Ниже'; dn.onclick = () => mv(1);
+  const dp = el('button', 'sec mini', 'Копия'); dp.title = 'Дублировать вопрос'; dp.onclick = () => { ED.qs.splice(ED.qs.indexOf(e) + 1, 0, cloneEd(e)); redrawList(); };
+  const rm = el('button', 'sec mini', 'Удалить'); rm.onclick = () => { if (confirm('Удалить вопрос ' + (ED.qs.indexOf(e) + 1) + '?')) { ED.qs.splice(ED.qs.indexOf(e), 1); redrawList(); } };
+  [up, dn, dp, rm].forEach(x => head.appendChild(x)); card.appendChild(head);
+
+  const ta = el('textarea'); ta.rows = 2; ta.placeholder = 'Текст вопроса'; ta.value = e.text; ta.oninput = () => { ED.dirty = true; e.text = ta.value; }; card.appendChild(ta);
+
+  const ib = el('div', 'imgbox');
+  const fi = el('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.className = 'hidden';
+  fi.onchange = async () => { if (fi.files[0]) { await pickImage(e, fi.files[0]); redraw(); } };
+  if (e.image) {
+    const im = el('img'); im.alt = ''; ib.appendChild(im);
+    putImage(im, edResolver(), e.image, () => im.replaceWith(el('span', 'muted', '🖼 ' + e.image + ' (предпросмотр недоступен)')));
+    ib.appendChild(el('span', 'muted', e.image));
+    const ch = el('button', 'sec mini', 'Заменить'); ch.onclick = () => fi.click();
+    const rr = el('button', 'sec mini', 'Убрать картинку'); rr.onclick = () => { e.image = ''; redraw(); };
+    ib.append(ch, rr);
+  } else { const ad = el('button', 'sec mini', '🖼 Добавить картинку'); ad.onclick = () => fi.click(); ib.appendChild(ad); }
+  ib.appendChild(fi); card.appendChild(ib);
+
+  const body = el('div'); body.style.marginTop = '8px';
+  if (e.type === 'single' || e.type === 'multi') {
+    const single = e.type === 'single';
+    body.appendChild(el('div', 'muted', single ? 'Варианты. Отметьте один правильный.' : 'Варианты. Отметьте все правильные.'));
+    e.opts.forEach(o => {
+      const row = el('div', 'orow');
+      const ck = el('input'); ck.type = single ? 'radio' : 'checkbox'; ck.name = 'ok_' + e.uid; ck.checked = o.ok; ck.title = 'Правильный ответ';
+      ck.onchange = () => { ED.dirty = true; if (single) e.opts.forEach(x => x.ok = false); o.ok = ck.checked; };
+      row.appendChild(ck);
+      const t = inp('text', o.t, v => o.t = v); t.placeholder = 'Вариант ответа'; row.appendChild(t);
+      const x = el('button', 'sec mini', '✕'); x.title = 'Удалить вариант'; x.onclick = () => { e.opts.splice(e.opts.indexOf(o), 1); redraw(); }; row.appendChild(x);
+      body.appendChild(row);
+    });
+    const add = el('button', 'sec mini', '+ вариант'); add.style.marginTop = '6px'; add.onclick = () => { e.opts.push({ t:'', ok:false }); redraw(); }; body.appendChild(add);
+  } else if (e.type === 'input') {
+    body.appendChild(el('div', 'muted', 'Допустимые ответы через « ; » (например: 5; пять). Регистр и «ё/е» не важны.'));
+    const a = inp('text', e.inp, v => e.inp = v); a.style.marginTop = '4px'; body.appendChild(a);
+  } else if (e.type === 'match') {
+    body.appendChild(el('div', 'muted', 'Пары: слева — пункт, справа — его пара. Ученик увидит правые части вперемешку.'));
+    e.pairs.forEach(p => {
+      const row = el('div', 'orow');
+      const l = inp('text', p[0], v => p[0] = v); l.placeholder = 'Левая часть'; row.appendChild(l);
+      row.appendChild(el('span', '', '='));
+      const r = inp('text', p[1], v => p[1] = v); r.placeholder = 'Правая часть'; row.appendChild(r);
+      const x = el('button', 'sec mini', '✕'); x.title = 'Удалить пару'; x.onclick = () => { e.pairs.splice(e.pairs.indexOf(p), 1); redraw(); }; row.appendChild(x);
+      body.appendChild(row);
+    });
+    const add = el('button', 'sec mini', '+ пара'); add.style.marginTop = '6px'; add.onclick = () => { e.pairs.push(['', '']); redraw(); }; body.appendChild(add);
+  }
+  card.appendChild(body);
+  return card;
+}
+function collectEditor() {
+  const errs = [], used = new Map(), keep = new Set();
+  const title = ED.title.trim(); if (!title) errs.push('Укажите название теста.');
+  if (!ED.qs.length) errs.push('В тесте должен быть хотя бы один вопрос.');
+  let classes = [];
+  try { classes = parseClasses(ED.classes.trim() ? ED.classes : ''); } catch (x) { errs.push('Классы нужно указать числами, например: 7 или 5-7 или 7, 8.'); }
+  const time = Math.max(0, parseInt(ED.time, 10) || 0);
+  const questions = ED.qs.map((e, i) => {
+    const n = 'Вопрос ' + (i + 1) + ': ';
+    const text = e.text.trim(); if (!text) errs.push(n + 'не заполнен текст.');
+    const pts = parseFloat(String(e.points).replace(',', '.'));
+    if (!(pts > 0)) errs.push(n + 'баллы должны быть положительным числом.');
+    const q = { id:'q' + (i + 1), type:e.type, text, image:e.image || null, options:[], answer:[], pairs:[], points:pts > 0 ? pts : 1 };
+    if (q.image) {
+      if (ED.local.has(q.image)) used.set(q.image, ED.local.get(q.image));
+      else if (ED.existing.has(q.image)) keep.add(q.image);
+      else errs.push(n + 'картинка «' + q.image + '» не найдена — выберите файл заново.');
+    }
+    if (e.type === 'single' || e.type === 'multi') {
+      const usedO = e.opts.filter(o => o.t.trim());
+      q.options = usedO.map(o => o.t.trim()); q.answer = usedO.filter(o => o.ok).map(o => o.t.trim());
+      if (q.options.length < 2) errs.push(n + 'нужно минимум 2 варианта ответа.');
+      if (new Set(q.options.map(norm)).size !== q.options.length) errs.push(n + 'варианты ответа повторяются.');
+      if (e.type === 'single' && q.answer.length !== 1) errs.push(n + 'отметьте ровно один правильный вариант.');
+      if (e.type === 'multi' && q.answer.length < 1) errs.push(n + 'отметьте хотя бы один правильный вариант.');
+      if (e.opts.some(o => o.ok && !o.t.trim())) errs.push(n + 'правильным отмечен пустой вариант.');
+    } else if (e.type === 'input') {
+      q.answer = e.inp.split(';').map(x => x.trim()).filter(Boolean);
+      if (!q.answer.length) errs.push(n + 'укажите хотя бы один допустимый ответ.');
+    } else {
+      q.pairs = e.pairs.filter(p => p[0].trim() || p[1].trim()).map(p => [p[0].trim(), p[1].trim()]);
+      if (q.pairs.length < 2) errs.push(n + 'нужно минимум 2 пары.');
+      if (q.pairs.some(p => !p[0] || !p[1])) errs.push(n + 'в каждой паре должны быть обе части.');
+      if (new Set(q.pairs.map(p => norm(p[0]))).size !== q.pairs.length) errs.push(n + 'левые части пар не должны повторяться.');
+    }
+    return q;
+  });
+  return { errs, used, keep, payload:{ title, subject:ED.subject.trim(), classes, time_limit:time, questions } };
+}
+async function saveEditor() {
+  const err = $('#edErr'); err.innerHTML = '';
+  const { errs, payload, used, keep } = collectEditor();
+  if (errs.length) {
+    const ul = el('ul'); errs.forEach(x => ul.appendChild(el('li', 'err', x))); err.appendChild(ul); err.scrollIntoView({ behavior:'smooth', block:'center' }); return;
+  }
+  const wasNew = ED.id == null, pend = ED.pending;
+  const ok = await guarded(async () => {
+    TESTS = await applyChanges({ upserts:[{ test:payload, used, keep, replaceId:ED.id, created:ED.created }] }, (wasNew ? 'Новый тест: ' : 'Редактирование: ') + payload.title);
+  }, 'Сохраняем в GitHub…');
+  if (!ok) return;
+  if (pend) PENDING = PENDING.filter(p => p !== pend);
+  closeEditor(true); renderList(); renderPreview();
+  status('Сохранено: «' + payload.title + '». Сайт обновится через 1–2 минуты.', 'ok');
+}
+$('#btnNew').onclick = () => startEditor({ id:null, test:{ title:'', classes:[], questions:[] } });
 
 /* подсказка репозитория и автовход */
 (() => {
@@ -504,6 +1066,7 @@ $('#btnPer').onclick = () => guarded(async () => { TESTS = await applyChanges({}
   const c = loadCreds();
   if (c && c.repo && c.token) { $('#repo').value = c.repo; $('#token').value = c.token; $('#remember').checked = !!localStorage.getItem('qa'); $('#btnLogin').click(); }
 })();
+
 </script>
 </body>
 </html>
