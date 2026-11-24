@@ -1,1 +1,509 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Админка тестов</title>
+<style>
+  :root { --bg:#f3f5f9; --card:#fff; --text:#1d2433; --muted:#667085; --accent:#2f6fed; --line:#dde2ec; --ok:#1a8f4a; --err:#c53030; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14171f; --card:#1e232e; --text:#e8ebf2; --muted:#9aa3b5; --accent:#6c9bff; --line:#323a4a; --ok:#4cc27d; --err:#ff7b7b; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 Arial, "Segoe UI", sans-serif; }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:16px; }
+  h1 { font-size:22px; margin:0 0 4px; } h2 { font-size:18px; margin:0 0 12px; }
+  .muted { color:var(--muted); }
+  label { display:block; font-weight:bold; margin:12px 0 4px; }
+  select, input[type=text] { width:100%; padding:10px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text); }
+  .row { display:flex; gap:12px; } .row > div { flex:1; }
+  button { background:var(--accent); color:#fff; border:0; border-radius:8px; padding:12px 22px; font-size:16px; cursor:pointer; margin-top:16px; }
+  button:disabled { opacity:.5; cursor:default; }
+  .err { color:var(--err); margin-top:10px; min-height:1.2em; }
+  .q { border-top:1px solid var(--line); padding:16px 0; } .q:first-child { border-top:0; }
+  .qt { white-space:pre-wrap; font-weight:bold; margin-bottom:10px; }
+  .qimg { max-width:100%; max-height:320px; display:block; margin:0 0 12px; border-radius:8px; border:1px solid var(--line); }
+  .opt { display:flex; align-items:flex-start; gap:10px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; margin-bottom:6px; cursor:pointer; }
+  .opt input { margin-top:5px; transform:scale(1.2); }
+  .opt:hover { border-color:var(--accent); }
+  .mrow { display:flex; gap:12px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
+  .mrow .l { flex:1 1 200px; } .mrow select { flex:1 1 200px; }
+  #bar { position:sticky; top:0; z-index:5; background:var(--card); border-bottom:1px solid var(--line); padding:10px 16px; display:flex; justify-content:space-between; align-items:center; }
+  #timer { font-weight:bold; font-variant-numeric:tabular-nums; }
+  .hidden { display:none !important; }
+  .big { font-size:42px; font-weight:bold; margin:8px 0; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 4px; }
+  .chip { margin:0; padding:10px 18px; background:var(--bg); color:var(--text); border:1px solid var(--line); }
+  .chip.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .tcard { display:flex; justify-content:space-between; align-items:center; gap:12px; width:100%; text-align:left; margin:0 0 8px; background:var(--bg); color:var(--text); border:1px solid var(--line); }
+  .tcard:hover { border-color:var(--accent); }
+  .tcard small { color:var(--muted); display:block; }
+  .go { color:var(--accent); font-weight:bold; white-space:nowrap; }
+  .res { border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:8px; }
+  .res.ok { border-left:6px solid var(--ok); } .res.bad { border-left:6px solid var(--err); }
+  .badge { font-weight:bold; } .ok .badge { color:var(--ok); } .bad .badge { color:var(--err); }
+  .sec { background:transparent; color:var(--accent); border:1px solid var(--accent); }
 
+
+
+  .wrap { max-width: 900px; }
+  input[type=password], input[type=number] { width:100%; padding:10px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text); }
+  input[type=file] { width:100%; padding:10px 0; font-size:15px; color:var(--text); }
+  button.danger { background:var(--err); }
+  button.small { padding:7px 12px; font-size:14px; margin:6px 6px 0 0; }
+  .top { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+  .top button { margin:0; }
+  .item { border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:10px; }
+  .item.bad { border-left:6px solid var(--err); } .item.good { border-left:6px solid var(--ok); }
+  .good-t { color:var(--ok); font-weight:bold; } .bad-t { color:var(--err); }
+  .msg { padding:12px 14px; border-radius:10px; margin-bottom:16px; border:1px solid var(--line); background:var(--card); white-space:pre-wrap; }
+  .msg.ok { border-color:var(--ok); } .msg.error { border-color:var(--err); color:var(--err); }
+  pre.view { white-space:pre-wrap; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px; font:14px/1.5 Arial,sans-serif; margin:8px 0 0; }
+  details summary { cursor:pointer; color:var(--accent); margin-top:12px; }
+  details ol { padding-left:20px; }
+  .inline { display:flex; gap:10px; align-items:center; flex-wrap:wrap; } .inline input[type=number] { width:100px; }
+  .inline button { margin:0; }
+  .chk { display:flex; align-items:center; gap:8px; font-weight:normal; margin-top:12px; } .chk input { transform:scale(1.2); }
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="loginCard" class="card">
+    <h1>Админка тестов</h1>
+    <div class="muted">Вход для учителя. Ученикам эта страница не нужна.</div>
+    <label for="repo">Репозиторий (логин/имя)</label>
+    <input type="text" id="repo" placeholder="ivanov/tests" autocomplete="off">
+    <label for="token">Токен доступа GitHub</label>
+    <input type="password" id="token" placeholder="github_pat_..." autocomplete="off">
+    <label class="chk"><input type="checkbox" id="remember"> Запомнить на этом компьютере (не отмечайте на чужих)</label>
+    <button id="btnLogin">Войти</button>
+    <div class="err" id="loginErr"></div>
+    <details>
+      <summary>Как получить токен (один раз)</summary>
+      <ol>
+        <li>Войдите на github.com → ваш аватар → Settings → Developer settings → Personal access tokens → <b>Fine-grained tokens</b> → Generate new token.</li>
+        <li>Token name: любое (например «tests»). Expiration: выберите срок (например, 1 год).</li>
+        <li>Repository access → <b>Only select repositories</b> → выберите репозиторий с этим сайтом.</li>
+        <li>Permissions → Repository permissions → <b>Contents: Read and write</b>.</li>
+        <li>Generate token → скопируйте токен (он показывается один раз) и вставьте выше. Сохраните его в надёжном месте (менеджер паролей).</li>
+      </ol>
+    </details>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="card top">
+      <div><b id="repoName"></b><div class="muted"><a id="siteLink" href="../" target="_blank">Открыть сайт для учеников</a></div></div>
+      <button class="sec" id="btnLogout">Выйти</button>
+    </div>
+    <div id="status" class="msg hidden"></div>
+
+    <div class="card">
+      <h2>Загрузить тесты</h2>
+      <div class="muted">Файл Excel (.xlsx) или ZIP (Excel + картинки). Можно выбрать несколько файлов сразу или один ZIP с несколькими тестами.
+        <a href="template.xlsx" download>Скачать шаблон</a></div>
+      <input type="file" id="files" accept=".xlsx,.zip" multiple>
+      <div id="preview" style="margin-top:10px"></div>
+      <button id="btnSave" class="hidden">Сохранить на сайт</button>
+    </div>
+
+    <div class="card">
+      <h2>Тесты на сайте</h2>
+      <div class="muted">Чтобы исправить тест: нажмите «Скачать», измените файл в Excel и загрузите его снова, выбрав «Заменить».</div>
+      <div id="list" style="margin-top:12px"></div>
+      <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+      <label for="perTest" style="margin-top:0">Вопросов у ученика в каждом тесте</label>
+      <div class="inline"><input type="number" id="perTest" min="1" max="100" value="5"><button class="sec" id="btnPer">Применить</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/*CORE*/
+const IMAGE_EXT = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp'];
+const TYPE_MAP = { 'ввод':'input', 'input':'input', 'текст':'input', 'один':'single', 'single':'single', 'одиночный':'single',
+  'несколько':'multi', 'multi':'multi', 'множественный':'multi', 'сопоставление':'match', 'match':'match' };
+const TYPE_RU = { input:'ввод', single:'один', multi:'несколько', match:'сопоставление' };
+
+function norm(s) { return String(s == null ? '' : s).trim().toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' '); }
+function canon(s) {
+  s = norm(s).replace(/,/g, '.');
+  const m = /^([+-]?)(\d+)(?:\.(\d+))?$/.exec(s);
+  if (m) { const ip = m[2].replace(/^0+/, '') || '0', fp = (m[3] || '').replace(/0+$/, ''); s = (m[1] === '-' && (ip !== '0' || fp) ? '-' : '') + ip + (fp ? '.' + fp : ''); }
+  return s;
+}
+async function sha256hex(str) {
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(d)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function ext(name) { const i = name.lastIndexOf('.'); return i < 0 ? '' : name.slice(i).toLowerCase(); }
+function cs(v) { if (v == null) return ''; if (v instanceof Date) return ''; return String(v).trim(); }
+function splitList(s) { return String(s).replace(/\n/g, ';').split(';').map(x => x.trim()).filter(Boolean); }
+function safeImageName(name) { return name.replace(/\\/g, '/').split('/').pop().replace(/[^\p{L}\p{N}_.\- ()]/gu, '_'); }
+function parseClasses(v) {
+  v = String(v).replace(/\s*[-–—]\s*/g, '-');
+  const out = new Set();
+  for (const part of v.split(/[,;\s]+/)) {
+    if (!part) continue;
+    const m = /^(\d{1,2})-(\d{1,2})$/.exec(part);
+    if (m && +m[1] <= +m[2] && +m[2] <= 12) { for (let i = +m[1]; i <= +m[2]; i++) out.add(i); }
+    else if (/^\d{1,2}$/.test(part)) out.add(+part);
+    else throw new Error(part);
+  }
+  return [...out].sort((a, b) => a - b).map(String);
+}
+
+/* Разбор листов «Настройки» и «Вопросы» (строки = массивы значений ячеек). images: Map(имя в нижнем регистре -> байты) */
+function parseTestRows(settingsRows, rows, images) {
+  const errors = [];
+  if (!rows) return { test:null, errors:['В файле нет листа «Вопросы».'], used:new Map() };
+  let title = 'Без названия', subject = '', limit = 0, classes = [];
+  for (const row of (settingsRows || [])) {
+    if (!row || row[0] == null) continue;
+    const k = cs(row[0]).toLowerCase(), v = row.length > 1 ? cs(row[1]) : '';
+    if (k.startsWith('назв') && v) title = v;
+    else if (k.startsWith('предм')) subject = v;
+    else if (k.startsWith('класс') && v) { try { classes = parseClasses(v); } catch (e) { errors.push('Лист «Настройки»: классы нужно указать числами, например: 7 или 5-7 или 7, 8.'); } }
+    else if (k.startsWith('врем') && v) { const n = Number(v.replace(',', '.')); if (!isFinite(n)) errors.push('Лист «Настройки»: время должно быть числом (минуты).'); else limit = Math.max(0, Math.trunc(n)); }
+  }
+  if (!rows.length) return { test:null, errors:['Лист «Вопросы» пуст.'], used:new Map() };
+  const header = rows[0].map(h => cs(h).toLowerCase());
+  const col = (...pre) => { for (let i = 0; i < header.length; i++) if (pre.some(p => header[i].startsWith(p))) return i; return null; };
+  const iType = col('тип'), iText = col('вопрос'), iImg = col('картинк'), iOpt = col('вариант'), iAns = col('правильн', 'ответ'), iPts = col('балл');
+  [['Тип', iType], ['Вопрос', iText], ['Варианты', iOpt], ['Правильный ответ', iAns]].forEach(([n, i]) => { if (i === null) errors.push(`Лист «Вопросы»: нет колонки «${n}».`); });
+  if (errors.length) return { test:null, errors, used:new Map() };
+  const get = (row, i) => (i !== null && i < row.length ? cs(row[i]) : '');
+  const questions = [], used = new Map();
+  for (let r = 1; r < rows.length; r++) {
+    const row = rows[r], idx = r + 1;
+    if (!row || row.every(x => cs(x) === '')) continue;
+    const e = msg => errors.push(`Строка ${idx}: ${msg}`);
+    const t = TYPE_MAP[get(row, iType).toLowerCase()], text = get(row, iText);
+    if (!t) { e('неизвестный тип (допустимо: ввод, один, несколько, сопоставление).'); continue; }
+    if (!text) { e('не заполнен текст вопроса.'); continue; }
+    let pts = 1;
+    if (get(row, iPts)) { pts = Number(get(row, iPts).replace(',', '.')); if (!isFinite(pts) || pts <= 0) { e('баллы должны быть положительным числом.'); continue; } }
+    const q = { id:'q' + (questions.length + 1), type:t, text, image:null, options:[], answer:[], pairs:[], points:pts };
+    const img = get(row, iImg);
+    if (img) {
+      const key = safeImageName(img);
+      if (!IMAGE_EXT.includes(ext(key))) { e(`картинка «${img}» — неподдерживаемый формат.`); continue; }
+      if (!images.has(key.toLowerCase())) { e(`картинка «${img}» не найдена (положите её в ZIP-архив вместе с Excel).`); continue; }
+      q.image = key; used.set(key, images.get(key.toLowerCase()));
+    }
+    const opts = splitList(get(row, iOpt)), ans = splitList(get(row, iAns));
+    if (t === 'input') {
+      if (!ans.length) { e('не указан правильный ответ.'); continue; }
+      q.answer = ans;
+    } else if (t === 'single' || t === 'multi') {
+      if (opts.length < 2) { e('нужно минимум 2 варианта ответа.'); continue; }
+      const low = new Map(opts.map(o => [norm(o), o]));
+      if (low.size !== opts.length) { e('варианты ответа повторяются.'); continue; }
+      if (!ans.length) { e('не указан правильный ответ.'); continue; }
+      const bad = ans.filter(a => !low.has(norm(a)));
+      if (bad.length) { e(`правильный ответ «${bad[0]}» отсутствует среди вариантов.`); continue; }
+      if (t === 'single' && ans.length !== 1) { e('для типа «один» нужен ровно один правильный ответ.'); continue; }
+      q.options = opts; q.answer = ans.map(a => low.get(norm(a)));
+    } else {
+      let pairs = [];
+      for (const o of opts) {
+        const p = o.indexOf('=');
+        if (p < 0) { pairs = null; break; }
+        const l = o.slice(0, p).trim(), rr = o.slice(p + 1).trim();
+        if (!l || !rr) { pairs = null; break; }
+        pairs.push([l, rr]);
+      }
+      if (!pairs || pairs.length < 2) { e('для сопоставления нужны минимум 2 пары вида «Левое=Правое» в колонке «Варианты».'); continue; }
+      q.pairs = pairs;
+    }
+    questions.push(q);
+  }
+  if (!questions.length && !errors.length) errors.push('В тесте нет ни одного вопроса.');
+  if (errors.length) return { test:null, errors, used:new Map() };
+  return { test:{ title, subject, time_limit:limit, classes, questions }, errors:[], used };
+}
+
+/* Публичный файл для сайта: правильные ответы только в виде хешей */
+async function buildPublic(list, perTest) {
+  const tests = [];
+  for (const t of list) {
+    const items = [];
+    for (const q of t.questions) {
+      const it = { id:q.id, type:q.type, text:q.text, image:q.image ? `img/${t.id}/${encodeURIComponent(q.image)}` : null };
+      const H = x => sha256hex(`${t.id}:${q.id}:${x}`);
+      if (q.type === 'input') it.h = await Promise.all(q.answer.map(a => H(canon(a))));
+      else if (q.type === 'single') { it.options = q.options; it.h = [await H(canon(q.answer[0]))]; }
+      else if (q.type === 'multi') { it.options = q.options; it.h = [await H(q.answer.map(canon).sort().join('\n'))]; }
+      else {
+        it.left = q.pairs.map(p => p[0]); it.right = shuffle(q.pairs.map(p => p[1]));
+        it.h = [await H(q.pairs.map(p => canon(p[0]) + '=' + canon(p[1])).sort().join('\n'))];
+      }
+      items.push(it);
+    }
+    tests.push({ id:t.id, title:t.title, subject:t.subject, classes:t.classes || [], questions:items });
+  }
+  return JSON.stringify({ generated:new Date().toISOString(), per_test:perTest, tests });
+}
+/*ENDCORE*/
+
+const $ = s => document.querySelector(s);
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+/* ───── ZIP / Excel ───── */
+const cleanEntries = z => Object.values(z.files).filter(f => !f.dir).map(f => ({ n:f.name, b:f.name.split('/').pop() }))
+  .filter(({ n, b }) => b && !b.startsWith('~$') && !n.startsWith('__MACOSX'));
+const dirOf = n => n.replace(/\\/g, '/').split('/').slice(0, -1).join('/');
+
+async function expandUpload(name, data) {
+  if (!name.toLowerCase().endsWith('.zip')) return [{ label:name, name, data }];
+  let z; try { z = await JSZip.loadAsync(data); } catch (e) { return [{ label:name, name, data }]; }
+  const entries = cleanEntries(z);
+  const nested = entries.filter(e => e.b.toLowerCase().endsWith('.zip')), xl = entries.filter(e => e.b.toLowerCase().endsWith('.xlsx'));
+  if (!nested.length && xl.length <= 1) return [{ label:name, name, data }];
+  const out = [];
+  for (const e of nested) {
+    const sub = await expandUpload(e.b, await z.file(e.n).async('uint8array'));
+    out.push(...sub.map(s => ({ ...s, label:`${name} / ${s.label}` })));
+  }
+  for (const e of xl) {
+    const zo = new JSZip(); zo.file(e.b, await z.file(e.n).async('uint8array'));
+    for (const e2 of entries) if (IMAGE_EXT.includes(ext(e2.b)) && dirOf(e2.n) === dirOf(e.n)) zo.file(e2.b, await z.file(e2.n).async('uint8array'));
+    out.push({ label:`${name} / ${e.n}`, name:e.b + '.zip', data:await zo.generateAsync({ type:'uint8array' }) });
+  }
+  return out;
+}
+async function readOne(name, data) {
+  const low = name.toLowerCase(); let xl = null; const images = new Map();
+  if (low.endsWith('.zip')) {
+    let z; try { z = await JSZip.loadAsync(data); } catch (e) { return { test:null, errors:['Не удалось открыть ZIP-архив.'], used:new Map() }; }
+    for (const { n, b } of cleanEntries(z)) {
+      const x = ext(b);
+      if (x === '.xlsx' && !xl) xl = await z.file(n).async('uint8array');
+      else if (IMAGE_EXT.includes(x)) images.set(safeImageName(b).toLowerCase(), await z.file(n).async('uint8array'));
+    }
+    if (!xl) return { test:null, errors:['В ZIP-архиве нет файла .xlsx.'], used:new Map() };
+  } else if (low.endsWith('.xlsx')) xl = data;
+  else return { test:null, errors:['Поддерживаются файлы .xlsx и .zip.'], used:new Map() };
+  let wb; try { wb = XLSX.read(xl, { type:'array' }); } catch (e) { return { test:null, errors:['Не удалось открыть Excel-файл: ' + e.message], used:new Map() }; }
+  const sheets = {}; wb.SheetNames.forEach(n => { sheets[n.trim().toLowerCase()] = wb.Sheets[n]; });
+  const rowsOf = ws => ws ? XLSX.utils.sheet_to_json(ws, { header:1, defval:null, blankrows:true }) : null;
+  return parseTestRows(rowsOf(sheets['настройки']), rowsOf(sheets['вопросы']), images);
+}
+
+/* ───── GitHub API ───── */
+const GH = { repo:'', token:'', branch:'main' };
+async function gh(path, opt = {}) {
+  const r = await fetch('https://api.github.com' + path, { cache:'no-store', ...opt, headers:{
+    Authorization:'Bearer ' + GH.token, Accept:'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28',
+    ...(opt.body ? { 'Content-Type':'application/json' } : {}), ...(opt.headers || {}) } });
+  if (!r.ok) {
+    let m = ''; try { m = (await r.json()).message || ''; } catch (e) {}
+    let text = `GitHub: ${r.status} ${m}`;
+    if (r.status === 401) text = 'Токен недействителен или истёк. Выйдите и введите новый токен.';
+    else if (r.status === 403 || r.status === 404) text = 'Нет доступа: проверьте имя репозитория и что у токена есть «Contents: Read and write» именно для этого репозитория. (' + r.status + ')';
+    const err = new Error(text); err.status = r.status; throw err;
+  }
+  return r;
+}
+async function fetchText(path) {
+  const r = await fetch(`https://api.github.com/repos/${GH.repo}/contents/${path}?ref=${encodeURIComponent(GH.branch)}&t=${Date.now()}`, {
+    cache:'no-store', headers:{ Authorization:'Bearer ' + GH.token, Accept:'application/vnd.github.raw+json', 'X-GitHub-Api-Version':'2022-11-28' } });
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error('GitHub: ' + r.status);
+  return r.text();
+}
+async function fetchSource() {
+  const t = await fetchText('tests_src/tests.json');
+  if (!t) return [];
+  try { const d = JSON.parse(t); return Array.isArray(d) ? d : []; } catch (e) { throw new Error('Файл tests_src/tests.json повреждён.'); }
+}
+function b64(bytes) { let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s); }
+
+async function commit(message, files, deletes) {
+  const R = '/repos/' + GH.repo;
+  const ref = await (await gh(`${R}/git/ref/heads/${GH.branch}`)).json(), head = ref.object.sha;
+  const base = (await (await gh(`${R}/git/commits/${head}`)).json()).tree.sha;
+  const entries = [];
+  for (let i = 0; i < files.length; i += 6) {
+    await Promise.all(files.slice(i, i + 6).map(async f => {
+      const body = typeof f.content === 'string' ? { content:f.content, encoding:'utf-8' } : { content:b64(f.content), encoding:'base64' };
+      const blob = await (await gh(`${R}/git/blobs`, { method:'POST', body:JSON.stringify(body) })).json();
+      entries.push({ path:f.path, mode:'100644', type:'blob', sha:blob.sha });
+    }));
+  }
+  deletes.forEach(p => entries.push({ path:p, mode:'100644', type:'blob', sha:null }));
+  const tree = await (await gh(`${R}/git/trees`, { method:'POST', body:JSON.stringify({ base_tree:base, tree:entries }) })).json();
+  const c = await (await gh(`${R}/git/commits`, { method:'POST', body:JSON.stringify({ message, tree:tree.sha, parents:[head] }) })).json();
+  await gh(`${R}/git/refs/heads/${GH.branch}`, { method:'PATCH', body:JSON.stringify({ sha:c.sha }) });
+  return { base };
+}
+async function imagePaths(treeSha) {
+  const t = await (await gh(`/repos/${GH.repo}/git/trees/${treeSha}?recursive=1`)).json();
+  return (t.tree || []).filter(x => x.type === 'blob' && x.path.startsWith('docs/img/')).map(x => x.path);
+}
+
+/* Применить изменения: свежий список -> правки -> tests_src + docs одним коммитом */
+async function applyChanges({ upserts = [], removeIds = [] }, message) {
+  const R = '/repos/' + GH.repo;
+  const list = await fetchSource();
+  const files = [], deletes = new Set();
+  const ref = await (await gh(`${R}/git/ref/heads/${GH.branch}`)).json();
+  const baseTree = (await (await gh(`${R}/git/commits/${ref.object.sha}`)).json()).tree.sha;
+  const existingImgs = await imagePaths(baseTree);
+  let nextId = Math.max(0, ...list.map(t => t.id)) + 1;
+  const dropImages = id => existingImgs.filter(p => p.startsWith(`docs/img/${id}/`));
+  for (const u of upserts) {
+    const id = u.replaceId != null ? u.replaceId : nextId++;
+    const entry = { id, title:u.test.title, subject:u.test.subject, time_limit:u.test.time_limit,
+      created:new Date().toISOString(), classes:u.test.classes, questions:u.test.questions };
+    const at = list.findIndex(t => t.id === id);
+    if (at >= 0) list[at] = entry; else list.push(entry);
+    const keep = new Set();
+    for (const [name, bytes] of u.used) { const p = `docs/img/${id}/${name}`; keep.add(p); files.push({ path:p, content:bytes }); }
+    dropImages(id).forEach(p => { if (!keep.has(p)) deletes.add(p); });
+  }
+  for (const id of removeIds) {
+    const at = list.findIndex(t => t.id === id); if (at >= 0) list.splice(at, 1);
+    dropImages(id).forEach(p => deletes.add(p));
+  }
+  list.sort((a, b) => a.id - b.id);
+  const perTest = Math.max(1, Math.min(100, parseInt($('#perTest').value, 10) || 5));
+  files.push({ path:'tests_src/tests.json', content:JSON.stringify(list, null, 1) });
+  files.push({ path:'docs/tests.json', content:await buildPublic(list, perTest) });
+  await commit(message, files, [...deletes]);
+  return list;
+}
+
+/* ───── интерфейс ───── */
+let TESTS = [], PENDING = [];
+function status(text, kind) { const s = $('#status'); s.textContent = text; s.className = 'msg ' + (kind || ''); if (!text) s.classList.add('hidden'); }
+async function guarded(fn, busyText) {
+  document.querySelectorAll('button').forEach(b => b.disabled = true);
+  if (busyText) status(busyText);
+  try { await fn(); } catch (e) { status(e.message || String(e), 'error'); }
+  document.querySelectorAll('button').forEach(b => b.disabled = false);
+}
+
+function saveCreds(remember) {
+  const v = JSON.stringify({ repo:GH.repo, token:GH.token });
+  try { sessionStorage.removeItem('qa'); localStorage.removeItem('qa'); (remember ? localStorage : sessionStorage).setItem('qa', v); } catch (e) {}
+}
+function loadCreds() { try { return JSON.parse(sessionStorage.getItem('qa') || localStorage.getItem('qa') || 'null'); } catch (e) { return null; } }
+
+async function login(repo, token, remember) {
+  GH.repo = repo.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\.git$/, '').replace(/\/$/, ''); GH.token = token.trim();
+  if (!/^[\w.-]+\/[\w.-]+$/.test(GH.repo)) throw new Error('Репозиторий укажите в виде «логин/имя», например ivanov/tests.');
+  const info = await (await gh('/repos/' + GH.repo)).json();
+  if (info.permissions && !info.permissions.push) throw new Error('У токена нет права записи в этот репозиторий (нужно Contents: Read and write).');
+  GH.branch = info.default_branch || 'main';
+  saveCreds(remember);
+  $('#loginCard').classList.add('hidden'); $('#app').classList.remove('hidden');
+  $('#repoName').textContent = GH.repo;
+  const pub = await fetchText('docs/tests.json');
+  try { if (pub) $('#perTest').value = JSON.parse(pub).per_test || 5; } catch (e) {}
+  await refresh();
+}
+$('#btnLogin').onclick = async () => {
+  $('#loginErr').textContent = ''; $('#btnLogin').disabled = true;
+  try { await login($('#repo').value, $('#token').value, $('#remember').checked); }
+  catch (e) { $('#loginErr').textContent = e.message; }
+  $('#btnLogin').disabled = false;
+};
+$('#btnLogout').onclick = () => { try { sessionStorage.removeItem('qa'); localStorage.removeItem('qa'); } catch (e) {} GH.token = ''; location.reload(); };
+
+async function refresh() { TESTS = await fetchSource(); renderList(); }
+function describe(t) {
+  return t.questions.map((q, i) => {
+    let a = q.type === 'match' ? q.pairs.map(p => p[0] + ' = ' + p[1]).join('; ') : q.answer.join('; ');
+    return `${i + 1}. [${TYPE_RU[q.type]}] ${q.text}\n    Ответ: ${a}` + (q.type === 'single' || q.type === 'multi' ? `\n    Варианты: ${q.options.join('; ')}` : '') + (q.image ? `\n    Картинка: ${q.image}` : '');
+  }).join('\n\n');
+}
+function renderList() {
+  const box = $('#list'); box.innerHTML = '';
+  if (!TESTS.length) { box.appendChild(el('div', 'muted', 'Тестов пока нет — загрузите первый файл.')); return; }
+  TESTS.slice().sort((a, b) => (a.classes[0] || 99) - (b.classes[0] || 99) || a.title.localeCompare(b.title, 'ru')).forEach(t => {
+    const it = el('div', 'item');
+    it.appendChild(el('b', '', t.title));
+    it.appendChild(el('div', 'muted', `${t.classes.length ? t.classes.join(', ') + ' класс' : 'без класса'} · ${t.subject || 'без предмета'} · вопросов: ${t.questions.length}`));
+    const view = el('pre', 'view hidden'); view.textContent = describe(t);
+    const bv = el('button', 'sec small', 'Просмотр'); bv.onclick = () => view.classList.toggle('hidden');
+    const bd = el('button', 'sec small', 'Скачать'); bd.onclick = () => guarded(() => downloadTest(t), 'Готовим файл…').then(() => status(''));
+    const bx = el('button', 'danger small', 'Удалить');
+    bx.onclick = () => { if (confirm(`Удалить тест «${t.title}» с сайта?`)) guarded(async () => { TESTS = await applyChanges({ removeIds:[t.id] }, `Удалён тест: ${t.title}`); renderList(); status('Тест удалён. Сайт обновится через 1–2 минуты.', 'ok'); }, 'Удаляем…'); };
+    it.append(bv, bd, bx, view); box.appendChild(it);
+  });
+}
+
+async function downloadTest(t) {
+  const rows = [['Тип', 'Вопрос', 'Картинка', 'Варианты', 'Правильный ответ', 'Баллы']];
+  t.questions.forEach(q => rows.push([TYPE_RU[q.type], q.text, q.image || '',
+    q.type === 'match' ? q.pairs.map(p => p[0] + '=' + p[1]).join('; ') : q.options.join('; '),
+    q.type === 'match' ? '' : q.answer.join('; '), q.points === 1 ? '' : q.points]));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Название', t.title], ['Предмет', t.subject || ''], ['Классы', (t.classes || []).join(', ')], ['Время', t.time_limit || 0]]), 'Настройки');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Вопросы');
+  const xlsx = XLSX.write(wb, { bookType:'xlsx', type:'array' });
+  const base = t.title.replace(/[^\p{L}\p{N}_.\- ]/gu, '_').slice(0, 60) || 'test';
+  const imgs = [...new Set(t.questions.map(q => q.image).filter(Boolean))];
+  let blob, name;
+  if (!imgs.length) { blob = new Blob([xlsx], { type:'application/octet-stream' }); name = base + '.xlsx'; }
+  else {
+    const z = new JSZip(); z.file(base + '.xlsx', xlsx);
+    for (const n of imgs) { const r = await fetch(`../img/${t.id}/${encodeURIComponent(n)}`, { cache:'no-store' }); if (r.ok) z.file(n, await r.arrayBuffer()); }
+    blob = await z.generateAsync({ type:'blob' }); name = base + '.zip';
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* загрузка */
+$('#files').onchange = () => guarded(async () => {
+  PENDING = []; $('#preview').innerHTML = ''; $('#btnSave').classList.add('hidden');
+  for (const f of $('#files').files) {
+    const data = new Uint8Array(await f.arrayBuffer());
+    for (const e of await expandUpload(f.name, data)) { const r = await readOne(e.name, e.data); PENDING.push({ label:e.label, ...r, replaceId:null }); }
+  }
+  renderPreview(); status('');
+}, 'Читаем файлы…');
+function renderPreview() {
+  const box = $('#preview'); box.innerHTML = '';
+  PENDING.forEach(p => {
+    const it = el('div', 'item ' + (p.test ? 'good' : 'bad')); it.appendChild(el('b', '', p.label));
+    if (!p.test) { p.errors.forEach(e => it.appendChild(el('div', 'bad-t', e))); }
+    else {
+      it.appendChild(el('div', 'good-t', `✓ ${p.test.title} · ${p.test.classes.length ? p.test.classes.join(', ') + ' класс' : 'без класса'} · вопросов: ${p.test.questions.length}`));
+      const sel = el('select'); const o0 = el('option', '', 'Добавить как новый тест'); o0.value = ''; sel.appendChild(o0);
+      TESTS.forEach(t => { const o = el('option', '', 'Заменить: ' + t.title); o.value = t.id; sel.appendChild(o); });
+      const same = TESTS.find(t => t.title.trim().toLowerCase() === p.test.title.trim().toLowerCase());
+      if (same) { sel.value = same.id; p.replaceId = same.id; }
+      sel.onchange = () => { p.replaceId = sel.value === '' ? null : Number(sel.value); };
+      sel.style.marginTop = '8px'; it.appendChild(sel);
+    }
+    box.appendChild(it);
+  });
+  $('#btnSave').classList.toggle('hidden', !PENDING.some(p => p.test));
+  const n = PENDING.filter(p => p.test).length; $('#btnSave').textContent = 'Сохранить на сайт (' + n + ')';
+}
+$('#btnSave').onclick = () => guarded(async () => {
+  const ok = PENDING.filter(p => p.test); if (!ok.length) return;
+  TESTS = await applyChanges({ upserts:ok.map(p => ({ test:p.test, used:p.used, replaceId:p.replaceId })) },
+    ok.length === 1 ? 'Тест: ' + ok[0].test.title : `Загружено тестов: ${ok.length}`);
+  PENDING = []; $('#preview').innerHTML = ''; $('#btnSave').classList.add('hidden'); $('#files').value = '';
+  renderList(); status(`Готово: сохранено тестов — ${ok.length}. Сайт обновится через 1–2 минуты.`, 'ok');
+}, 'Сохраняем в GitHub…');
+$('#btnPer').onclick = () => guarded(async () => { TESTS = await applyChanges({}, 'Число вопросов у ученика'); status('Сохранено. Сайт обновится через 1–2 минуты.', 'ok'); }, 'Сохраняем…');
+
+/* подсказка репозитория и автовход */
+(() => {
+  const h = location.hostname;
+  if (h.endsWith('.github.io')) $('#repo').value = h.split('.')[0] + '/' + (location.pathname.split('/')[1] || '');
+  const c = loadCreds();
+  if (c && c.repo && c.token) { $('#repo').value = c.repo; $('#token').value = c.token; $('#remember').checked = !!localStorage.getItem('qa'); $('#btnLogin').click(); }
+})();
+</script>
+</body>
+</html>
