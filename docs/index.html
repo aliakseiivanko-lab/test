@@ -1,1 +1,290 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тестирование</title>
+<style>
+  :root { --bg:#f3f5f9; --card:#fff; --text:#1d2433; --muted:#667085; --accent:#2f6fed; --line:#dde2ec; --ok:#1a8f4a; --err:#c53030; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14171f; --card:#1e232e; --text:#e8ebf2; --muted:#9aa3b5; --accent:#6c9bff; --line:#323a4a; --ok:#4cc27d; --err:#ff7b7b; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 Arial, "Segoe UI", sans-serif; }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:16px; }
+  h1 { font-size:22px; margin:0 0 4px; } h2 { font-size:18px; margin:0 0 12px; }
+  .muted { color:var(--muted); }
+  label { display:block; font-weight:bold; margin:12px 0 4px; }
+  select, input[type=text] { width:100%; padding:10px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text); }
+  .row { display:flex; gap:12px; } .row > div { flex:1; }
+  button { background:var(--accent); color:#fff; border:0; border-radius:8px; padding:12px 22px; font-size:16px; cursor:pointer; margin-top:16px; }
+  button:disabled { opacity:.5; cursor:default; }
+  .err { color:var(--err); margin-top:10px; min-height:1.2em; }
+  .q { border-top:1px solid var(--line); padding:16px 0; } .q:first-child { border-top:0; }
+  .qt { white-space:pre-wrap; font-weight:bold; margin-bottom:10px; }
+  .qimg { max-width:100%; max-height:320px; display:block; margin:0 0 12px; border-radius:8px; border:1px solid var(--line); }
+  .opt { display:flex; align-items:flex-start; gap:10px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; margin-bottom:6px; cursor:pointer; }
+  .opt input { margin-top:5px; transform:scale(1.2); }
+  .opt:hover { border-color:var(--accent); }
+  .mrow { display:flex; gap:12px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
+  .mrow .l { flex:1 1 200px; } .mrow select { flex:1 1 200px; }
+  #bar { position:sticky; top:0; z-index:5; background:var(--card); border-bottom:1px solid var(--line); padding:10px 16px; display:flex; justify-content:space-between; align-items:center; }
+  #timer { font-weight:bold; font-variant-numeric:tabular-nums; }
+  .hidden { display:none !important; }
+  .big { font-size:42px; font-weight:bold; margin:8px 0; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 4px; }
+  .chip { margin:0; padding:10px 18px; background:var(--bg); color:var(--text); border:1px solid var(--line); }
+  .chip.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .tcard { display:flex; justify-content:space-between; align-items:center; gap:12px; width:100%; text-align:left; margin:0 0 8px; background:var(--bg); color:var(--text); border:1px solid var(--line); }
+  .tcard:hover { border-color:var(--accent); }
+  .tcard small { color:var(--muted); display:block; }
+  .go { color:var(--accent); font-weight:bold; white-space:nowrap; }
+  .res { border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:8px; }
+  .res.ok { border-left:6px solid var(--ok); } .res.bad { border-left:6px solid var(--err); }
+  .badge { font-weight:bold; } .ok .badge { color:var(--ok); } .bad .badge { color:var(--err); }
+  .sec { background:transparent; color:var(--accent); border:1px solid var(--accent); }
 
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="screenList" class="card">
+    <h1>Тесты</h1>
+    <div class="muted">Выберите класс, затем тест. Тест начнётся сразу — в нём случайные вопросы.</div>
+    <div id="chips" class="chips"></div>
+    <div id="tests" style="margin-top:14px"></div>
+    <div class="err" id="listErr"></div>
+  </div>
+
+  <div id="screenTest" class="hidden">
+    <div class="card"><h1 id="testTitle"></h1><div class="muted" id="testInfo"></div></div>
+    <div class="card" id="questions"></div>
+    <div class="card">
+      <button id="btnSubmit">Завершить и проверить</button>
+      <button id="btnBack" class="sec">К списку тестов</button>
+      <div class="err" id="submitErr"></div>
+    </div>
+  </div>
+
+  <div id="screenDone" class="hidden">
+    <div class="card">
+      <h1 id="doneTitle"></h1>
+      <div class="big" id="doneScore"></div>
+      <div id="doneList" style="margin-top:14px"></div>
+      <button id="btnAgain">Пройти ещё раз</button>
+      <button id="btnList" class="sec">К списку тестов</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/*CORE*/
+function norm(s) { return String(s == null ? '' : s).trim().toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' '); }
+function canon(s) {
+  s = norm(s).replace(/,/g, '.');
+  const m = /^([+-]?)(\d+)(?:\.(\d+))?$/.exec(s);
+  if (m) { const ip = m[2].replace(/^0+/, '') || '0', fp = (m[3] || '').replace(/0+$/, ''); s = (m[1] === '-' && (ip !== '0' || fp) ? '-' : '') + ip + (fp ? '.' + fp : ''); }
+  return s;
+}
+function sha256Fallback(msg) {
+  const rr = (v, a) => (v >>> a) | (v << (32 - a));
+  const K = [], H = []; let n = 0;
+  for (let c = 2; n < 64; c++) { let p = true; for (let d = 2; d * d <= c; d++) if (c % d === 0) { p = false; break; }
+    if (p) { if (n < 8) H[n] = (Math.pow(c, 0.5) % 1 * 4294967296) | 0; K[n++] = (Math.pow(c, 1 / 3) % 1 * 4294967296) | 0; } }
+  const l = msg.length, words = [];
+  const bytes = Array.from(msg); bytes.push(0x80);
+  while (bytes.length % 64 !== 56) bytes.push(0);
+  const hi = Math.floor(l * 8 / 4294967296), lo = (l * 8) >>> 0;
+  bytes.push((hi >>> 24) & 255, (hi >>> 16) & 255, (hi >>> 8) & 255, hi & 255, (lo >>> 24) & 255, (lo >>> 16) & 255, (lo >>> 8) & 255, lo & 255);
+  for (let i = 0; i < bytes.length; i += 4) words.push((bytes[i] << 24) | (bytes[i + 1] << 16) | (bytes[i + 2] << 8) | bytes[i + 3]);
+  let h = H.slice();
+  for (let j = 0; j < words.length; j += 16) {
+    const w = words.slice(j, j + 16);
+    for (let i = 16; i < 64; i++) {
+      const s0 = rr(w[i - 15], 7) ^ rr(w[i - 15], 18) ^ (w[i - 15] >>> 3), s1 = rr(w[i - 2], 17) ^ rr(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+      w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
+    }
+    let [a, b, c, d, e, f, g, hh] = h;
+    for (let i = 0; i < 64; i++) {
+      const S1 = rr(e, 6) ^ rr(e, 11) ^ rr(e, 25), ch = (e & f) ^ (~e & g), t1 = (hh + S1 + ch + K[i] + w[i]) | 0;
+      const S0 = rr(a, 2) ^ rr(a, 13) ^ rr(a, 22), mj = (a & b) ^ (a & c) ^ (b & c), t2 = (S0 + mj) | 0;
+      hh = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+    }
+    h = [h[0] + a, h[1] + b, h[2] + c, h[3] + d, h[4] + e, h[5] + f, h[6] + g, h[7] + hh].map(x => x | 0);
+  }
+  return h.map(x => (x >>> 0).toString(16).padStart(8, '0')).join('');
+}
+async function sha256hex(str) {
+  const bytes = new TextEncoder().encode(str);
+  if (typeof crypto !== 'undefined' && crypto.subtle) {
+    const d = await crypto.subtle.digest('SHA-256', bytes);
+    return Array.from(new Uint8Array(d)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  return sha256Fallback(bytes);
+}
+async function isRight(tid, q, ans) {
+  let key;
+  if (q.type === 'input') { if (!norm(ans)) return false; key = canon(ans); }
+  else if (q.type === 'single') { if (!ans) return false; key = canon(ans); }
+  else if (q.type === 'multi') { if (!Array.isArray(ans) || !ans.length) return false; key = ans.map(canon).sort().join('\n'); }
+  else {
+    if (!ans || !q.left.every(l => ans[l])) return false;
+    key = q.left.map(l => canon(l) + '=' + canon(ans[l])).sort().join('\n');
+  }
+  return q.h.includes(await sha256hex(tid + ':' + q.id + ':' + key));
+}
+function fmtGiven(q, a) {
+  if (q.type === 'multi') return (a || []).join('; ');
+  if (q.type === 'match') return q.left.filter(l => a && a[l]).map(l => l + ' → ' + a[l]).join('; ');
+  return String(a || '').trim();
+}
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function makePaper(test, n) {
+  return shuffle(test.questions).slice(0, n).map(q => {
+    const it = Object.assign({}, q);
+    if (it.options) it.options = shuffle(it.options);
+    if (it.type === 'match') { it.left = shuffle(it.left); it.right = shuffle(it.right); }
+    return it;
+  });
+}
+/*ENDCORE*/
+
+const $ = s => document.querySelector(s);
+const S = { test:null, paper:[], answers:{}, finished:false };
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function show(id) { for (const s of ['#screenList', '#screenTest', '#screenDone']) $(s).classList.toggle('hidden', s !== id); window.scrollTo(0, 0); }
+
+/* ───── список тестов по классам ───── */
+let DATA = null, curCls = null;
+async function loadList() {
+  try {
+    const r = await fetch('tests.json?v=' + Date.now()); if (!r.ok) throw 0;
+    DATA = await r.json();
+  } catch (e) { $('#listErr').textContent = 'Не удалось загрузить тесты. Обновите страницу.'; return; }
+  const set = new Set(); let other = false;
+  DATA.tests.forEach(t => { if (t.classes.length) t.classes.forEach(c => set.add(String(c))); else other = true; });
+  const groups = [...set].sort((a, b) => a - b); if (other) groups.push('other');
+  if (!groups.length) { $('#tests').textContent = 'Тестов пока нет.'; return; }
+  if (!groups.includes(curCls)) curCls = groups[0];
+  renderChips(groups); renderTests();
+}
+function renderChips(groups) {
+  const box = $('#chips'); box.innerHTML = '';
+  groups.forEach(g => {
+    const b = el('button', 'chip' + (g === curCls ? ' on' : ''), g === 'other' ? 'Другие' : g + ' класс');
+    b.onclick = () => { curCls = g; renderChips(groups); renderTests(); };
+    box.appendChild(b);
+  });
+}
+function renderTests() {
+  const box = $('#tests'); box.innerHTML = '';
+  DATA.tests.filter(t => curCls === 'other' ? !t.classes.length : t.classes.map(String).includes(curCls))
+    .sort((a, b) => a.title.localeCompare(b.title, 'ru')).forEach(t => {
+      const b = el('button', 'tcard'), left = el('div');
+      left.appendChild(el('b', '', t.title));
+      left.appendChild(el('small', '', (t.subject ? t.subject + ' · ' : '') + 'вопросов: ' + Math.min(DATA.per_test, t.questions.length)));
+      b.appendChild(left); b.appendChild(el('span', 'go', 'Начать →'));
+      b.onclick = () => begin(t);
+      box.appendChild(b);
+    });
+}
+
+/* ───── тест ───── */
+function begin(t) {
+  S.test = t; S.paper = makePaper(t, Math.min(DATA.per_test, t.questions.length)); S.answers = {}; S.finished = false;
+  $('#testTitle').textContent = t.title;
+  $('#testInfo').textContent = 'Вопросов: ' + S.paper.length + '. Ответьте на все вопросы и нажмите «Завершить и проверить».';
+  renderTest(); show('#screenTest');
+}
+function renderTest() {
+  const box = $('#questions'); box.innerHTML = '';
+  S.paper.forEach((q, i) => {
+    const wrap = el('div', 'q');
+    wrap.appendChild(el('div', 'qt', (i + 1) + '. ' + q.text));
+    if (q.image) { const im = el('img', 'qimg'); im.src = q.image; im.alt = ''; wrap.appendChild(im); }
+    const saved = S.answers[q.id];
+    if (q.type === 'input') {
+      const inp = el('input'); inp.type = 'text'; inp.autocomplete = 'off'; inp.placeholder = 'Ваш ответ';
+      if (typeof saved === 'string') inp.value = saved;
+      inp.oninput = () => setAns(q.id, inp.value);
+      wrap.appendChild(inp);
+    } else if (q.type === 'single' || q.type === 'multi') {
+      const multi = q.type === 'multi';
+      if (multi) wrap.appendChild(el('div', 'muted', 'Можно выбрать несколько вариантов')); 
+      q.options.forEach(o => {
+        const lab = el('label', 'opt'); lab.style.fontWeight = 'normal';
+        const inp = el('input'); inp.type = multi ? 'checkbox' : 'radio'; inp.name = 'q_' + q.id; inp.value = o;
+        inp.checked = multi ? (Array.isArray(saved) && saved.includes(o)) : saved === o;
+        inp.onchange = () => {
+          if (multi) setAns(q.id, [...wrap.querySelectorAll('input:checked')].map(x => x.value));
+          else setAns(q.id, o);
+        };
+        lab.appendChild(inp); lab.appendChild(el('span', '', o)); wrap.appendChild(lab);
+      });
+    } else if (q.type === 'match') {
+      wrap.appendChild(el('div', 'muted', 'Выберите пару для каждого пункта'));
+      const cur = (saved && typeof saved === 'object') ? saved : {};
+      q.left.forEach(l => {
+        const row = el('div', 'mrow'); row.appendChild(el('div', 'l', l));
+        const sel = el('select'); const o0 = el('option', '', '— выберите —'); o0.value = ''; sel.appendChild(o0);
+        q.right.forEach(r => { const o = el('option', '', r); o.value = r; sel.appendChild(o); });
+        sel.value = cur[l] || '';
+        sel.onchange = () => { const a = Object.assign({}, S.answers[q.id] || {}); a[l] = sel.value; setAns(q.id, a); };
+        row.appendChild(sel); wrap.appendChild(row);
+      });
+    }
+    box.appendChild(wrap);
+  });
+}
+
+
+
+function setAns(id, v) { S.answers[id] = v; }
+function isAnswered(q) {
+  const a = S.answers[q.id];
+  if (q.type === 'input') return typeof a === 'string' && a.trim() !== '';
+  if (q.type === 'single') return !!a;
+  if (q.type === 'multi') return Array.isArray(a) && a.length > 0;
+  if (q.type === 'match') return !!a && q.left.every(l => a[l]);
+  return false;
+}
+
+/* ───── проверка и результат ───── */
+$('#btnSubmit').onclick = async () => {
+  const missing = S.paper.filter(q => !isAnswered(q)).length;
+  if (missing && !confirm('Без ответа осталось вопросов: ' + missing + '. Всё равно завершить?')) return;
+  $('#btnSubmit').disabled = true;
+  const items = [];
+  for (let i = 0; i < S.paper.length; i++) {
+    const q = S.paper[i], a = S.answers[q.id];
+    items.push({ n:i + 1, q:q.text, image:q.image, given:fmtGiven(q, a), ok:await isRight(S.test.id, q, a) });
+  }
+  S.finished = true; $('#btnSubmit').disabled = false; showResult(items);
+};
+function showResult(items) {
+  $('#doneTitle').textContent = S.test.title;
+  $('#doneScore').textContent = 'Верно: ' + items.filter(x => x.ok).length + ' из ' + items.length;
+  const box = $('#doneList'); box.innerHTML = '';
+  items.forEach(it => {
+    const r = el('div', 'res ' + (it.ok ? 'ok' : 'bad'));
+    r.appendChild(el('div', 'badge', (it.ok ? '✓ Верно' : '✗ Неверно') + ' — вопрос ' + it.n));
+    r.appendChild(el('div', 'qt', it.q));
+    if (it.image) { const im = el('img', 'qimg'); im.src = it.image; im.alt = ''; r.appendChild(im); }
+    r.appendChild(el('div', 'muted', 'Ваш ответ: ' + (it.given || '— нет ответа —')));
+    box.appendChild(r);
+  });
+  show('#screenDone');
+}
+$('#btnAgain').onclick = () => begin(S.test);
+$('#btnList').onclick = $('#btnBack').onclick = () => {
+  if (!S.finished && !$('#screenTest').classList.contains('hidden') && !confirm('Текущая попытка будет потеряна. Выйти?')) return;
+  show('#screenList'); loadList();
+};
+window.addEventListener('beforeunload', e => { if (!S.finished && !$('#screenTest').classList.contains('hidden')) { e.preventDefault(); e.returnValue = ''; } });
+loadList();
+</script>
+</body>
+</html>
