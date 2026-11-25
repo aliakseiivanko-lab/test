@@ -636,10 +636,14 @@ function shortTitle(t) {
   const m = /^[^.]{1,40}\.\s*\d+\s*класс\.\s*(.+)$/i.exec(s);
   return m ? m[1] : s;
 }
+function secNum(t) {
+  const m = /§\s*(\d+)/.exec(t.title);
+  return m ? +m[1] : Infinity;
+}
 function renderTests() {
   const box = $('#tests'); box.innerHTML = '';
   DATA.tests.filter(t => curCls === 'other' ? !t.classes.length : t.classes.map(String).includes(curCls))
-    .sort((a, b) => a.title.localeCompare(b.title, 'ru')).forEach(t => {
+    .sort((a, b) => secNum(a) - secNum(b) || a.title.localeCompare(b.title, 'ru')).forEach(t => {
       const n = Math.min(DATA.per_test, t.questions.length);
       const key = curCls === 'other' ? 'x' : curCls;
       const b = el('button', 'card tcard c' + key);
