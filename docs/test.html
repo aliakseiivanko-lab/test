@@ -758,19 +758,24 @@ $('#btnList').onclick = $('#btnBack').onclick = () => {
   if (!S.finished && !$('#screenTest').classList.contains('hidden') && !confirm('Текущая попытка будет потеряна. Выйти?')) return;
   show('#screenList'); loadList();
 };
-window.addEventListener('beforeunload', e => { if (!S.finished && !$('#screenTest').classList.contains('hidden')) { e.preventDefault(); e.returnValue = ''; } });
+window.addEventListener('beforeunload', e => { if (!S.leaving && !S.finished && !$('#screenTest').classList.contains('hidden')) { e.preventDefault(); e.returnValue = ''; } });
 loadList();
 
 /* ---------- «На главную» с анимацией Бипа ---------- */
 (function(){
   const ov = document.getElementById("ov"), fill = document.getElementById("ovFill"), status = document.getElementById("ovStatus");
   let going = false;
+  addEventListener("pageshow", () => {   // возврат кнопкой «Назад»: страница берётся из кэша с открытым оверлеем
+    going = false; S.leaving = false;
+    ov.classList.remove("show"); ov.setAttribute("aria-hidden", "true");
+    fill.style.width = "0"; status.textContent = "Бип собирает вещи…";
+  });
   document.querySelectorAll("[data-home]").forEach(a => a.addEventListener("click", e => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
     e.preventDefault();
     if (going) return;
     if (!S.finished && !$('#screenTest').classList.contains('hidden') && !confirm('Текущая попытка будет потеряна. Вернуться на главную?')) return;
-    going = true; S.finished = true;          // чтобы не сработал beforeunload
+    going = true; S.leaving = true;           // чтобы не сработал beforeunload
     ov.classList.add("show"); ov.setAttribute("aria-hidden", "false");
     const stages = ["Бип собирает вещи…", "Заводит моторчик…", "Едем домой!"];
     let i = 0;
