@@ -272,7 +272,16 @@ footer b{color:var(--accent)}
   .tcard .num{width:54px;height:54px;font-size:24px;border-radius:16px}
   .tcard h3{padding-right:60px}
   header .tag{display:none}
-  .theme-btn{margin-left:auto}
+  header{gap:8px}
+  .brand{gap:8px;min-width:0}
+  header b{font-size:16px;white-space:nowrap}
+  .logo{width:40px;height:40px;border-radius:14px}
+  .home-btn{padding:0 12px}
+  .theme-btn{margin-left:8px}
+  .home-btn span{display:none}
+}
+@media (max-width:400px){
+  header b{display:none}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition-duration:.001ms!important}
@@ -307,6 +316,40 @@ footer b{color:var(--accent)}
 .theme-btn .sun{display:none}
 :root[data-theme="dark"] .theme-btn .sun{display:block}
 :root[data-theme="dark"] .theme-btn .moon{display:none}
+
+/* ---------- кнопка «На главную» ---------- */
+.home-btn{
+  margin-left:auto;display:inline-flex;align-items:center;gap:8px;height:46px;
+  padding:0 18px 0 12px;border-radius:16px;white-space:nowrap;
+  background:var(--card);border:2px solid var(--line);color:var(--text);
+  font-weight:800;font-size:.95rem;text-decoration:none;cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,.08);
+  transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease;
+}
+.home-btn svg{width:22px;height:22px;flex:none;stroke:var(--accent);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.home-btn .arr{margin-right:-2px;transition:transform .25s ease}
+.home-btn:hover,.home-btn:focus-visible{border-color:var(--accent);transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.08);outline:none}
+.home-btn:hover .arr,.home-btn:focus-visible .arr{transform:translateX(-5px)}
+.home-btn .house{transition:transform .25s ease}
+.home-btn:hover .house{transform:rotate(-8deg) scale(1.1)}
+header .tag{margin-left:14px}
+.btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- оверлей «едем домой» ---------- */
+.ov{
+  position:fixed;inset:0;z-index:50;display:grid;place-items:center;
+  background:var(--ov);backdrop-filter:blur(6px);
+  opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;
+}
+.ov.show{opacity:1;visibility:visible}
+.ov-box{text-align:center;transform:scale(.94);transition:transform .3s ease}
+.ov.show .ov-box{transform:scale(1)}
+.ov .robot{width:130px;margin:0 auto;animation:jump .45s ease-in-out infinite alternate}
+@keyframes jump{to{transform:translateY(-16px) rotate(3deg)}}
+.ov-name{font-family:"Fredoka",system-ui,sans-serif;font-size:clamp(1.4rem,4vw,2rem);margin:16px 0 18px}
+.ov-bar{width:min(340px,72vw);height:10px;margin:0 auto 14px;border-radius:999px;background:var(--line);overflow:hidden}
+.ov-bar span{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .25s linear}
+.ov-status{color:var(--muted);font-weight:700;font-size:.95rem}
 </style>
 </head>
 <body>
@@ -324,6 +367,11 @@ footer b{color:var(--accent)}
         </svg>
       </div>
       <b>Школа робота Бипа</b>
+    </a>
+    <a class="home-btn" href="../index.html" data-home title="Вернуться на главную">
+      <svg class="arr" viewBox="0 0 24 24"><path d="M19 12H6M11 6l-6 6 6 6"/></svg>
+      <svg class="house" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 10v10h4.5v-5.5h4V20h4.5V10"/></svg>
+      <span>На главную</span>
     </a>
     <span class="tag"><i></i>Бип на связи</span>
     <button class="theme-btn" id="themeBtn" type="button" aria-label="Переключить тему" title="Светлая / тёмная тема">
@@ -411,6 +459,7 @@ footer b{color:var(--accent)}
         <div class="btns">
           <button id="btnAgain" class="btn">Пройти ещё раз</button>
           <button id="btnList" class="btn sec">К списку тестов</button>
+          <a class="btn sec" href="../index.html" data-home><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 10v10h4.5v-5.5h4V20h4.5V10"/></svg>На главную</a>
         </div>
       </div>
     </div>
@@ -421,6 +470,29 @@ footer b{color:var(--accent)}
     <b>Бип-бип!</b> Школа робота Бипа · Уроки и тесты для 6–10 классов
   </footer>
 
+</div>
+
+  <!-- оверлей возврата -->
+<div class="ov" id="ov" aria-hidden="true">
+  <div class="ov-box">
+    <svg class="robot" viewBox="0 0 120 140" aria-hidden="true">
+                <line x1="60" y1="8" x2="60" y2="26" stroke="#8a93b8" stroke-width="4"/><circle class="ball" cx="60" cy="8" r="7"/>
+<g class="armL"><rect x="6" y="84" width="14" height="38" rx="7" fill="#8a93b8"/></g>
+<g class="armR"><rect x="100" y="84" width="14" height="38" rx="7" fill="#8a93b8"/></g>
+<rect x="26" y="80" width="68" height="50" rx="12" fill="#c9d0ee"/><rect x="44" y="94" width="32" height="20" rx="6" fill="#ff7a1a"/>
+<rect x="18" y="24" width="84" height="60" rx="18" fill="#dfe4f7" stroke="#8a93b8" stroke-width="3"/>
+<rect x="28" y="36" width="64" height="36" rx="12" fill="#1d2233"/>
+<circle class="eye" cx="46" cy="52" r="8"/><circle class="eye" cx="74" cy="52" r="8"/>
+<path class="brow" d="M36 38 L54 46 M84 38 L66 46" stroke="#ff4b4b" stroke-width="4" stroke-linecap="round"/>
+<rect class="face-n" x="50" y="62" width="20" height="3" rx="1.5" fill="#5ee0ff"/>
+<path class="face-s" d="M48 62 Q60 74 72 62" stroke="#7dff9a" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path class="face-a" d="M48 68 Q60 58 72 68" stroke="#ff4b4b" stroke-width="4" fill="none" stroke-linecap="round"/>
+<g class="steam"><circle cx="16" cy="30" r="7"/><circle cx="104" cy="30" r="7"/><circle cx="24" cy="14" r="5"/><circle cx="96" cy="14" r="5"/></g>
+    </svg>
+    <div class="ov-name">Возвращаемся на главную</div>
+    <div class="ov-bar"><span id="ovFill"></span></div>
+    <div class="ov-status" id="ovStatus">Бип собирает вещи…</div>
+  </div>
 </div>
 
 <script>
@@ -688,6 +760,28 @@ $('#btnList').onclick = $('#btnBack').onclick = () => {
 };
 window.addEventListener('beforeunload', e => { if (!S.finished && !$('#screenTest').classList.contains('hidden')) { e.preventDefault(); e.returnValue = ''; } });
 loadList();
+
+/* ---------- «На главную» с анимацией Бипа ---------- */
+(function(){
+  const ov = document.getElementById("ov"), fill = document.getElementById("ovFill"), status = document.getElementById("ovStatus");
+  let going = false;
+  document.querySelectorAll("[data-home]").forEach(a => a.addEventListener("click", e => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    if (going) return;
+    if (!S.finished && !$('#screenTest').classList.contains('hidden') && !confirm('Текущая попытка будет потеряна. Вернуться на главную?')) return;
+    going = true; S.finished = true;          // чтобы не сработал beforeunload
+    ov.classList.add("show"); ov.setAttribute("aria-hidden", "false");
+    const stages = ["Бип собирает вещи…", "Заводит моторчик…", "Едем домой!"];
+    let i = 0;
+    (function next() {
+      if (i < stages.length) {
+        status.textContent = stages[i]; fill.style.width = ((i + 1) / stages.length) * 100 + "%"; i++;
+        setTimeout(next, reduceMotion ? 60 : 300);
+      } else setTimeout(() => { location.href = a.getAttribute("href"); }, reduceMotion ? 30 : 180);
+    })();
+  }));
+})();
 
 /* ---------- светлая / тёмная тема ---------- */
 (function(){
