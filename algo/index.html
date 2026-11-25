@@ -3,6 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#fff7e6">
+<script>
+(function(){var t;try{t=localStorage.getItem('bip-theme')}catch(e){}
+if(t!=='dark'&&t!=='light')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+document.documentElement.setAttribute('data-theme',t);})();
+</script>
 <title>Исполнители алгоритмов</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -116,8 +122,8 @@ h2{font-family:"Fredoka",system-ui,sans-serif;font-size:clamp(1.5rem,3.4vw,2.1re
 .card:hover .num{transform:rotate(-6deg) scale(1.06)}
 .card .ic{
   width:56px;height:56px;border-radius:16px;display:grid;place-items:center;
-  background:color-mix(in srgb,var(--ac) 12%,#fff);
-  border:2px solid color-mix(in srgb,var(--ac) 30%,#fff);
+  background:color-mix(in srgb,var(--ac) 12%,var(--card));
+  border:2px solid color-mix(in srgb,var(--ac) 30%,var(--card));
 }
 .card .ic svg{width:34px;height:34px;stroke:var(--ac);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .card h3{font-family:"Fredoka",system-ui,sans-serif;font-size:1.3rem;padding-right:64px}
@@ -148,7 +154,7 @@ footer b{color:var(--accent)}
 /* ---------- оверлей запуска ---------- */
 .ov{
   position:fixed;inset:0;z-index:50;display:grid;place-items:center;
-  background:rgba(255,247,230,.97);backdrop-filter:blur(6px);
+  background:var(--ov);backdrop-filter:blur(6px);
   opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;
 }
 .ov.show{opacity:1;visibility:visible}
@@ -177,6 +183,62 @@ footer b{color:var(--accent)}
   .g{display:none}
   .reveal{opacity:1;transform:none}
 }
+
+/* ---------- тёмная тема ---------- */
+:root{color-scheme:light;--ov:rgba(255,247,230,.97)}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#151829; --card:#1f2340; --text:#eef0fa; --muted:#a4aacb;
+  --line:#363c63; --good:#3ddc84; --ov:rgba(21,24,41,.97);
+}
+:root[data-theme="dark"] body::before{
+  background:
+    radial-gradient(circle at 10% 15%, rgba(52,211,153,.10), transparent 30%),
+    radial-gradient(circle at 90% 10%, rgba(96,165,250,.10), transparent 28%),
+    radial-gradient(circle at 88% 90%, rgba(255,122,26,.09), transparent 30%),
+    radial-gradient(circle at 6% 92%, rgba(244,114,182,.08), transparent 28%);
+}
+:root[data-theme="dark"] .g{color:rgba(255,176,32,.11)}
+.theme-anim,.theme-anim *{transition:background-color .35s ease,border-color .35s ease,color .35s ease!important}
+.theme-btn{
+  flex:none;width:46px;height:46px;border-radius:16px;cursor:pointer;
+  display:grid;place-items:center;margin-left:12px;padding:0;
+  background:var(--card);border:2px solid var(--line);color:var(--text);
+  box-shadow:0 4px 0 rgba(0,0,0,.08);
+  transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease;
+}
+.theme-btn:hover{border-color:var(--accent);transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.08)}
+.theme-btn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.theme-btn .sun{display:none}
+:root[data-theme="dark"] .theme-btn .sun{display:block}
+:root[data-theme="dark"] .theme-btn .moon{display:none}
+
+/* ---------- кнопка «Все курсы» ---------- */
+.home-btn{
+  margin-left:auto;display:inline-flex;align-items:center;gap:8px;height:46px;
+  padding:0 18px 0 12px;border-radius:16px;white-space:nowrap;
+  background:var(--card);border:2px solid var(--line);color:var(--text);
+  font-weight:800;font-size:.95rem;text-decoration:none;cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,.08);
+  transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease;
+}
+.home-btn svg{width:22px;height:22px;flex:none;stroke:var(--accent);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.home-btn .arr{margin-right:-2px;transition:transform .25s ease}
+.home-btn:hover,.home-btn:focus-visible{border-color:var(--accent);transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.08);outline:none}
+.home-btn:hover .arr,.home-btn:focus-visible .arr{transform:translateX(-5px)}
+.home-btn .house{transition:transform .25s ease}
+.home-btn:hover .house{transform:rotate(-8deg) scale(1.1)}
+header .tag{margin-left:14px}
+@media (max-width:480px){
+  header{gap:8px}
+  header b{font-size:16px;white-space:nowrap}
+  .logo{width:40px;height:40px;border-radius:14px}
+  .home-btn{padding:0 12px}
+  .home-btn span{display:none}
+  .theme-btn{margin-left:8px}
+  header .tag{display:none}
+}
+@media (max-width:400px){ header b{display:none} }
 </style>
 </head>
 <body>
@@ -192,7 +254,16 @@ footer b{color:var(--accent)}
       </svg>
     </div>
     <b>Полигон исполнителей</b>
+    <a class="home-btn" href="../index.html" data-home title="Вернуться ко всем курсам">
+      <svg class="arr" viewBox="0 0 24 24"><path d="M19 12H6M11 6l-6 6 6 6"/></svg>
+      <svg class="house" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 10v10h4.5v-5.5h4V20h4.5V10"/></svg>
+      <span>Все курсы</span>
+    </a>
     <span class="tag"><i></i>все модули на месте</span>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Переключить тему" title="Светлая / тёмная тема">
+      <svg class="moon" viewBox="0 0 24 24"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"/></svg>
+      <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
   </header>
 
   <div class="hero">
@@ -400,6 +471,56 @@ document.querySelectorAll(".card").forEach((card) => {
     })();
   });
 });
+
+/* ---------- «Все курсы» с анимацией ---------- */
+document.querySelectorAll("[data-home]").forEach((a) => {
+  a.addEventListener("click", (e) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    if (launching) return;
+    launching = true;
+
+    ovIc.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 10v10h4.5v-5.5h4V20h4.5V10"/></svg>';
+
+    ov.classList.add("show");
+    ov.setAttribute("aria-hidden", "false");
+    ovName.textContent = "Возвращаемся ко всем курсам";
+
+    const stages = ["Собираем модули…", "Заводим моторчик…", "Едем домой!"];
+    let i = 0;
+    (function next() {
+      if (i < stages.length) {
+        ovStatus.textContent = stages[i];
+        ovFill.style.width = ((i + 1) / stages.length) * 100 + "%";
+        i++;
+        setTimeout(next, reduceMotion ? 60 : 300);
+      } else {
+        setTimeout(() => { location.href = a.getAttribute("href"); }, reduceMotion ? 30 : 180);
+      }
+    })();
+  });
+});
+
+/* ---------- возврат кнопкой «Назад» (страница берётся из кэша браузера) ---------- */
+addEventListener("pageshow", () => {
+  launching = false;
+  ov.classList.remove("show"); ov.setAttribute("aria-hidden", "true");
+  ovFill.style.width = "0"; ovStatus.textContent = "Подключаем исполнителя…";
+});
+
+/* ---------- светлая / тёмная тема ---------- */
+(function(){
+  const root = document.documentElement, btn = document.getElementById("themeBtn");
+  function apply(t){ root.setAttribute("data-theme", t); const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = t === "dark" ? "#151829" : "#fff7e6"; }
+  apply(root.getAttribute("data-theme") || "light");
+  btn.addEventListener("click", () => {
+    const t = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.classList.add("theme-anim"); apply(t);
+    try { localStorage.setItem("bip-theme", t); } catch (e) {}
+    setTimeout(() => root.classList.remove("theme-anim"), 450);
+  });
+  addEventListener("storage", e => { if (e.key === "bip-theme" && (e.newValue === "dark" || e.newValue === "light")) apply(e.newValue); });
+})();
 </script>
 </body>
 </html>
