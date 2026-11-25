@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Исполнители алгоритмов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff7e6; --card:#ffffff; --text:#23283a; --muted:#6b7089;
+  --accent:#ff7a1a; --accent2:#ffb020; --good:#1f9d55;
+  --line:#f0e3c8;
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:"Nunito","Trebuchet MS",system-ui,sans-serif;
+  font-size:17px; line-height:1.55; overflow-x:hidden; min-height:100vh;
+}
+body::before{
+  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:
+    radial-gradient(circle at 10% 15%, rgba(52,211,153,.14), transparent 30%),
+    radial-gradient(circle at 90% 10%, rgba(96,165,250,.14), transparent 28%),
+    radial-gradient(circle at 88% 90%, rgba(255,122,26,.12), transparent 30%),
+    radial-gradient(circle at 6% 92%, rgba(244,114,182,.10), transparent 28%);
+}
+.g{
+  position:fixed; z-index:0; pointer-events:none; user-select:none;
+  font-family:ui-monospace,Menlo,Consolas,monospace; font-weight:800;
+  color:rgba(35,40,58,.09); animation:float linear infinite;
+}
+@keyframes float{
+  from{transform:translateY(110vh) rotate(-8deg)}
+  to{transform:translateY(-15vh) rotate(10deg)}
+}
+.wrap{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:0 20px}
+
+/* ---------- шапка ---------- */
+header{display:flex;align-items:center;gap:12px;padding:18px 0}
+.logo{
+  width:46px;height:46px;border-radius:16px;flex:none;display:grid;place-items:center;
+  background:linear-gradient(145deg,#34d399,#22d3ee);
+  box-shadow:0 5px 0 rgba(35,40,58,.15);
+}
+.logo svg{width:28px;height:28px;stroke:#fff;stroke-width:2.4;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.logo .dot{fill:#fff;stroke:none}
+header b{font-family:"Fredoka",system-ui,sans-serif;font-size:22px;letter-spacing:.01em}
+header .tag{margin-left:auto;font-size:13px;font-weight:800;color:var(--muted);display:flex;align-items:center;gap:8px}
+header .tag i{width:9px;height:9px;border-radius:50%;background:var(--good);box-shadow:0 0 0 4px rgba(31,157,85,.15);animation:pulse 2s ease-in-out infinite;font-style:normal}
+@keyframes pulse{50%{transform:scale(1.4)}}
+
+/* ---------- герой ---------- */
+.hero{
+  display:flex;align-items:center;justify-content:center;gap:36px;
+  padding:30px 0 46px;text-align:center;flex-wrap:wrap;
+}
+.mascot{width:130px;flex:none;animation:bob 3s ease-in-out infinite}
+.mascot.robot-m{animation-delay:.6s}
+.mascot .eye{fill:#5ee0ff;animation:blink 4.6s infinite}
+@keyframes blink{0%,91%,100%{opacity:1}94%,97%{opacity:.12}}
+.mascot .ball{fill:#ffb020;transform-box:fill-box;transform-origin:center;animation:ballPulse 1.8s ease-in-out infinite}
+@keyframes ballPulse{50%{transform:scale(1.28);filter:drop-shadow(0 0 8px #ffb020)}}
+.mascot .armR{transform-box:fill-box;transform-origin:50% 10%;animation:wave 2.3s ease-in-out infinite}
+@keyframes wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-24deg)}}
+@keyframes bob{50%{transform:translateY(-9px)}}
+.mascot svg{width:100%;display:block;filter:drop-shadow(0 14px 20px rgba(35,40,58,.16))}
+.mascot.turtle-m svg{stroke:#12b886;stroke-width:2.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+.hero .mid{max-width:560px}
+.hero h1{
+  font-family:"Fredoka",system-ui,sans-serif;
+  font-size:clamp(2rem,5.4vw,3.4rem);line-height:1.08;letter-spacing:-.01em;
+}
+.hero h1 em{font-style:normal;color:var(--accent);text-shadow:0 3px 0 rgba(255,122,26,.15)}
+.hero p{color:var(--muted);margin-top:14px;font-size:1.05rem}
+.badges{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;justify-content:center}
+.badges span{
+  background:var(--card);border:2px solid var(--line);border-radius:999px;
+  padding:7px 14px;font-size:.88rem;font-weight:800;color:var(--muted);
+}
+
+/* ---------- секции ---------- */
+section{padding:24px 0}
+h2{font-family:"Fredoka",system-ui,sans-serif;font-size:clamp(1.5rem,3.4vw,2.1rem);margin-bottom:6px}
+.sub{color:var(--muted);margin-bottom:22px}
+
+/* ---------- карточки ---------- */
+.courses{display:flex;flex-wrap:wrap;justify-content:center;gap:18px}
+.card{
+  --ac:#ff7a1a; --ac2:#ffb020;
+  flex:1 1 240px;max-width:300px;
+  position:relative;background:var(--card);border:2px solid var(--line);
+  border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:13px;
+  text-decoration:none;color:inherit;box-shadow:0 6px 0 rgba(35,40,58,.05);
+  transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;
+}
+.card.c6{--ac:#12b886;--ac2:#5eead4}
+.card.c7{--ac:#4f7df9;--ac2:#60a5fa}
+.card.c9{--ac:#e14f9a;--ac2:#f472b6}
+.card.c10{--ac:#7c5cf0;--ac2:#a78bfa}
+.card:hover,.card:focus-visible{
+  transform:translateY(-8px);border-color:var(--ac);
+  box-shadow:0 20px 44px rgba(35,40,58,.13);outline:none;
+}
+.card .num{
+  position:absolute;top:18px;right:18px;
+  font-family:"Fredoka",system-ui,sans-serif;font-size:24px;font-weight:700;color:#fff;
+  background:linear-gradient(145deg,var(--ac),var(--ac2));
+  min-width:54px;height:54px;padding:0 8px;border-radius:16px;display:grid;place-items:center;
+  box-shadow:0 5px 0 rgba(35,40,58,.12);transition:transform .25s ease;
+}
+.card:hover .num{transform:rotate(-6deg) scale(1.06)}
+.card .ic{
+  width:56px;height:56px;border-radius:16px;display:grid;place-items:center;
+  background:color-mix(in srgb,var(--ac) 12%,#fff);
+  border:2px solid color-mix(in srgb,var(--ac) 30%,#fff);
+}
+.card .ic svg{width:34px;height:34px;stroke:var(--ac);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.card h3{font-family:"Fredoka",system-ui,sans-serif;font-size:1.3rem;padding-right:64px}
+.topics{display:flex;flex-wrap:wrap;gap:7px}
+.topics span{
+  background:var(--bg);border:2px solid var(--line);border-radius:999px;
+  padding:4px 11px;font-size:.8rem;font-weight:700;color:var(--muted);
+}
+.go{
+  margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;
+  font-weight:800;font-size:.98rem;border-radius:15px;padding:13px 16px;
+  box-shadow:0 5px 0 rgba(35,40,58,.15);
+  transition:transform .15s ease,box-shadow .15s ease;
+}
+.go svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s ease}
+.card:hover .go{transform:translateY(2px);box-shadow:0 3px 0 rgba(35,40,58,.15)}
+.card:hover .go svg{transform:translateX(5px)}
+
+/* ---------- появление ---------- */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+.reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}.reveal.d5{transition-delay:.40s}
+
+footer{margin-top:26px;padding:26px 0 34px;text-align:center;color:var(--muted);font-size:.9rem}
+footer b{color:var(--accent)}
+
+/* ---------- оверлей запуска ---------- */
+.ov{
+  position:fixed;inset:0;z-index:50;display:grid;place-items:center;
+  background:rgba(255,247,230,.97);backdrop-filter:blur(6px);
+  opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;
+}
+.ov.show{opacity:1;visibility:visible}
+.ov-box{text-align:center;transform:scale(.94);transition:transform .3s ease}
+.ov.show .ov-box{transform:scale(1)}
+.ov-ic{
+  width:84px;height:84px;margin:0 auto;border-radius:24px;
+  display:grid;place-items:center;color:#fff;
+  background:linear-gradient(145deg,var(--accent),var(--accent2));
+  box-shadow:0 8px 0 rgba(35,40,58,.15);
+  animation:jump .45s ease-in-out infinite alternate;
+}
+.ov-ic svg{width:46px;height:46px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+@keyframes jump{to{transform:translateY(-14px) rotate(3deg)}}
+.ov-name{font-family:"Fredoka",system-ui,sans-serif;font-size:clamp(1.4rem,4vw,2rem);margin:18px 0 16px}
+.ov-bar{width:min(340px,72vw);height:10px;margin:0 auto 14px;border-radius:999px;background:var(--line);overflow:hidden}
+.ov-bar span{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .25s linear}
+.ov-status{color:var(--muted);font-weight:700;font-size:.95rem}
+
+@media (max-width:720px){
+  .mascot{width:92px}
+  .hero{gap:22px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.001ms!important}
+  .g{display:none}
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="reveal">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M4 17 L9 7 L14 17 L19 7"/>
+        <circle class="dot" cx="9" cy="7" r="1.6"/>
+        <circle class="dot" cx="19" cy="7" r="1.6"/>
+      </svg>
+    </div>
+    <b>Полигон исполнителей</b>
+    <span class="tag"><i></i>все модули на месте</span>
+  </header>
+
+  <div class="hero">
+    <div class="mascot turtle-m reveal" aria-hidden="true">
+      <svg viewBox="0 0 64 64">
+        <path d="M12 43 C12 27 20 19 32 19 C44 19 52 27 52 43" />
+        <path d="M9 43 H55" />
+        <path d="M32 19 V43 M21 26 L43 41 M43 26 L21 41" />
+        <circle cx="57.5" cy="38" r="4.6" />
+        <circle cx="58.8" cy="36.6" r="1.1" fill="#12b886" stroke="none" />
+        <path d="M19 43 l-3.5 7.5 M28.5 43 l-1.8 7.5 M37.5 43 l1.8 7.5 M46 43 l3.5 7.5" />
+        <path d="M12 41 l-5.5 -2.5" />
+        <path d="M7 55 H57" />
+      </svg>
+    </div>
+
+    <div class="mid reveal d1">
+      <h1>Исполнители <em>алгоритмов</em></h1>
+      <p>
+        Черепаха, Робот и три Python-редактора — выбери исполнителя, открой модуль
+        и решай задачи. Каждый модуль живёт на своей странице: нажми на карточку — и мы перейдём.
+      </p>
+      <div class="badges">
+        <span>5 модулей</span>
+        <span>6–10 классы</span>
+        <span>Черепаха · Робот · Python</span>
+      </div>
+    </div>
+
+    <div class="mascot robot-m reveal d2" aria-hidden="true">
+      <svg viewBox="0 0 120 140">
+        <line x1="60" y1="8" x2="60" y2="26" stroke="#8a93b8" stroke-width="4"/><circle class="ball" cx="60" cy="8" r="7"/>
+        <g><rect x="6" y="84" width="14" height="38" rx="7" fill="#8a93b8"/></g>
+        <g class="armR"><rect x="100" y="84" width="14" height="38" rx="7" fill="#8a93b8"/></g>
+        <rect x="26" y="80" width="68" height="50" rx="12" fill="#c9d0ee"/><rect x="44" y="94" width="32" height="20" rx="6" fill="#4f7df9"/>
+        <rect x="18" y="24" width="84" height="60" rx="18" fill="#dfe4f7" stroke="#8a93b8" stroke-width="3"/>
+        <rect x="28" y="36" width="64" height="36" rx="12" fill="#1d2233"/>
+        <circle class="eye" cx="46" cy="52" r="8"/><circle class="eye" cx="74" cy="52" r="8"/>
+        <rect x="50" y="62" width="20" height="3" rx="1.5" fill="#5ee0ff"/>
+      </svg>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="reveal">Выбери модуль</h2>
+    <p class="sub reveal d1">Карточки отсортированы по классам — от черепахи шестиклассника до массивов десятиклассника.</p>
+
+    <div class="courses">
+      <a class="card c6 reveal d1" href="turtle.html" data-name="Черепаха — 6 класс">
+        <span class="num">6</span>
+        <span class="ic"><svg viewBox="0 0 64 64">
+          <path d="M12 44 C12 28 20 19 32 19 C44 19 52 28 52 44" />
+          <path d="M10 44 H54" />
+          <path d="M32 19 V44 M21 25 L43 41 M43 25 L21 41" />
+          <circle cx="57" cy="40" r="4.5" />
+          <path d="M18 44 l-3 7 M46 44 l3 7" />
+        </svg></span>
+        <h3>Черепаха</h3>
+        <div class="topics"><span>вперёд</span><span>назад</span><span>налево</span><span>направо</span></div>
+        <span class="go">Открыть модуль
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+
+      <a class="card c7 reveal d2" href="robot.html" data-name="Робот — 7 класс">
+        <span class="num">7</span>
+        <span class="ic"><svg viewBox="0 0 64 64">
+          <rect x="18" y="22" width="28" height="24" rx="7" />
+          <circle cx="27" cy="33" r="2.5" /><circle cx="37" cy="33" r="2.5" />
+          <path d="M28 40h8" />
+          <path d="M32 22v-8M32 14a3 3 0 1 0 .01 0" />
+          <path d="M18 30h-6M46 30h6M24 46v8M40 46v8" />
+        </svg></span>
+        <h3>Робот</h3>
+        <div class="topics"><span>клетчатое поле</span><span>стены</span><span>закрась</span></div>
+        <span class="go">Открыть модуль
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+
+      <a class="card c8 reveal d3" href="editor8_updated.html" data-name="Python — 8 класс">
+        <span class="num">8</span>
+        <span class="ic"><svg viewBox="0 0 64 64">
+          <path d="M24 20 L12 32 L24 44" />
+          <path d="M40 20 L52 32 L40 44" />
+          <path d="M36 16 L28 48" />
+        </svg></span>
+        <h3>Python-редактор</h3>
+        <div class="topics"><span>редактор кода</span><span>запуск программ</span></div>
+        <span class="go">Открыть модуль
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+
+      <a class="card c9 reveal d4" href="python_strings.html" data-name="Python — 9 класс">
+        <span class="num">9</span>
+        <span class="ic"><svg viewBox="0 0 64 64">
+          <path d="M26 18 C21 20 18 25 18 31 V39 H28 V29 H22 C22 25 24 22 28 21" />
+          <path d="M44 18 C39 20 36 25 36 31 V39 H46 V29 H40 C40 25 42 22 46 21" />
+          <path d="M14 50 H50" />
+        </svg></span>
+        <h3>Строки</h3>
+        <div class="topics"><span>строки</span><span>методы</span><span>срезы</span></div>
+        <span class="go">Открыть модуль
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+
+      <a class="card c10 reveal d5" href="python_array.html" data-name="Python — 10 класс">
+        <span class="num">10</span>
+        <span class="ic"><svg viewBox="0 0 64 64">
+          <path d="M27 16 L21 16 L21 48 L27 48" />
+          <path d="M37 16 L43 16 L43 48 L37 48" />
+          <circle cx="32" cy="25" r="1.8" /><circle cx="32" cy="32" r="1.8" /><circle cx="32" cy="39" r="1.8" />
+        </svg></span>
+        <h3>Массивы</h3>
+        <div class="topics"><span>списки</span><span>циклы</span><span>поиск</span></div>
+        <span class="go">Открыть модуль
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+    </div>
+  </section>
+
+  <footer class="reveal">
+    Полигон исполнителей · черепаха, робот и Python для <b>6–10 классов</b>
+  </footer>
+
+</div>
+
+<!-- оверлей запуска -->
+<div class="ov" id="ov" aria-hidden="true">
+  <div class="ov-box">
+    <div class="ov-ic" id="ovIc">
+      <svg viewBox="0 0 64 64"><path d="M24 20 L12 32 L24 44 M40 20 L52 32 L40 44" /></svg>
+    </div>
+    <div class="ov-name" id="ovName">—</div>
+    <div class="ov-bar"><span id="ovFill"></span></div>
+    <div class="ov-status" id="ovStatus">Подключаем исполнителя…</div>
+  </div>
+</div>
+
+<noscript>
+  <style>.reveal{opacity:1;transform:none}.g{display:none}</style>
+</noscript>
+
+<script>
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* плавающие символы алгоритмов */
+const GLYPHS = ["→","{}","нц","кц","repeat","if","< >","==","вперёд","повтори","раз","раздел","пока","алг"];
+if (!reduceMotion) {
+  for (let i = 0; i < 14; i++) {
+    const s = document.createElement("span");
+    s.className = "g";
+    s.textContent = GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+    s.style.left = Math.random() * 94 + "vw";
+    s.style.fontSize = 16 + Math.random() * 26 + "px";
+    s.style.animationDuration = 16 + Math.random() * 18 + "s";
+    s.style.animationDelay = -Math.random() * 24 + "s";
+    document.body.appendChild(s);
+  }
+}
+
+/* появление блоков */
+const io = new IntersectionObserver((entries) => {
+  entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+}, { threshold: 0.12 });
+document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+
+/* запуск модуля */
+const ov = document.getElementById("ov");
+const ovIc = document.getElementById("ovIc");
+const ovName = document.getElementById("ovName");
+const ovFill = document.getElementById("ovFill");
+const ovStatus = document.getElementById("ovStatus");
+let launching = false;
+
+document.querySelectorAll(".card").forEach((card) => {
+  card.addEventListener("click", (e) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    if (launching) return;
+    launching = true;
+
+    /* иконка модуля в оверлее = иконка карточки */
+    ovIc.innerHTML = "";
+    ovIc.appendChild(card.querySelector(".ic svg").cloneNode(true));
+
+    ov.classList.add("show");
+    ov.setAttribute("aria-hidden", "false");
+    ovName.textContent = card.dataset.name;
+
+    const stages = ["Подключаем исполнителя…", "Загружаем команды…", "Проверяем поле…", "Поехали!"];
+    let i = 0;
+    (function next() {
+      if (i < stages.length) {
+        ovStatus.textContent = stages[i];
+        ovFill.style.width = ((i + 1) / stages.length) * 100 + "%";
+        i++;
+        setTimeout(next, reduceMotion ? 60 : 300);
+      } else {
+        setTimeout(() => { location.href = card.getAttribute("href"); }, reduceMotion ? 30 : 180);
+      }
+    })();
+  });
+});
+</script>
+</body>
+</html>
