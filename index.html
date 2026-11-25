@@ -512,6 +512,13 @@ document.querySelectorAll(".card").forEach((card) => {
   });
   addEventListener("storage", e => { if (e.key === "bip-theme" && (e.newValue === "dark" || e.newValue === "light")) apply(e.newValue); });
 })();
+
+/* ---------- возврат кнопкой «Назад» (страница берётся из кэша браузера) ---------- */
+addEventListener("pageshow", () => {
+  launching = false;
+  ov.classList.remove("show"); ov.setAttribute("aria-hidden", "true");
+  ovFill.style.width = "0"; ovStatus.textContent = "Бип подключается…";
+});
 </script>
 </body>
 </html>
