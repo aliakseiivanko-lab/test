@@ -772,6 +772,7 @@ function pick(a){let b=bags.get(a)||[];if(!b.length){b=[...a].sort(()=>Math.rand
 function meter(f){$('#mfill').style.width=Math.min(f,5)*20+'%';$('#mlab').textContent=LAB[Math.min(f,4)]}
 let step=0,fails=0,total=0,log=[],typer=null,passed=[],lastTry='';
 const SAVED={};
+const SENT={};
 const DR={};
 function saveState(){SAVED[LV]={step,total,log:[...log],passed:[...passed]}}
 const D={},P={};try{Object.keys(localStorage).filter(k=>/^py\d/.test(k)).forEach(k=>localStorage.removeItem(k))}catch(e){}
@@ -830,6 +831,7 @@ function initSend(g){
       if(!RESULTS_URL)throw new Error('no-url');
       const r=await fetch(RESULTS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(data)});
       const j=await r.json();if(!j.ok)throw new Error(j.error||'fail');
+      SENT[LV]={surname,cls};
       box.innerHTML=`<div class="smsg ok">✅ Результат отправлен: ${esc(surname)}, ${esc(cls)}. Молодец!</div>`;
     }catch(e){showCode(box,'Не получилось отправить автоматически. Скопируй это и отправь учителю:',surname,cls,g)}
   };
@@ -841,10 +843,13 @@ function finish(){const gi=GR.findIndex(x=>total<=x[0]),g=GR[gi];
  let best=null;try{const b=localStorage.getItem('py'+LV+'best');best=b===null?null:+b;if(best===null||total<best){best=total;localStorage.setItem('py'+LV+'best',String(best))}localStorage.setItem('py'+LV,'1')}catch(e){}
  D[LV]=true;mood(total<=5?'happy':'idle');meter(0);say(g[4],'ok');
  const chips=STEPS.map((t,i)=>t.task?(log[i]||0):null).filter(x=>x!==null).map((n,i)=>`<span>${i+1}: ${n?(n<3?'😠':'🤬'):'😊'} ${n}</span>`).join('');
- $('#panel').innerHTML=`<div class="res"><div class="stars">${'⭐'.repeat(g[1])}${'☆'.repeat(5-g[1])}</div><h2>${g[3]}</h2>
- <div class="send" id="send"><div class="lab">📨 Отправь результат учителю</div>
+ const sendBlock=SENT[LV]
+ ?`<div class="send" id="send"><div class="lab">📨 Отправь результат учителю</div><div class="smsg ok">✅ Результат уже отправлен: ${esc(SENT[LV].surname)}, ${esc(SENT[LV].cls)}. Повторно отправлять не нужно.</div></div>`
+ :`<div class="send" id="send"><div class="lab">📨 Отправь результат учителю</div>
  <div class="sf"><input id="sSur" type="text" placeholder="Фамилия" maxlength="40" autocomplete="off" aria-label="Фамилия"><input id="sCls" type="text" placeholder="Класс, напр. 7А" maxlength="8" autocomplete="off" aria-label="Класс"></div>
- <button class="btn good" id="sBtn" type="button">Отправить результат</button><div class="smsg" id="sMsg" role="status" aria-live="polite"></div></div>
+ <button class="btn good" id="sBtn" type="button">Отправить результат</button><div class="smsg" id="sMsg" role="status" aria-live="polite"></div></div>`;
+ $('#panel').innerHTML=`<div class="res"><div class="stars">${'⭐'.repeat(g[1])}${'☆'.repeat(5-g[1])}</div><h2>${g[3]}</h2>
+ ${sendBlock}
  <div class="lab">Счётчик злости Бипа</div>
  <div class="big">Ошибок за уровень<b>${total}</b></div>
  <div class="gauge"><i style="left:${Math.min(total,20)*5}%"></i></div>
@@ -854,7 +859,7 @@ function finish(){const gi=GR.findIndex(x=>total<=x[0]),g=GR[gi];
  <div class="lab">Как ставятся звёзды</div>
  <div class="tbl">${GR.map((x,i)=>`<div class="${i===gi?'me':''}"><span>${x[2]}</span><span>${'⭐'.repeat(x[1])}</span><span>${x[3]}</span></div>`).join('')}</div>
  <div class="row"><button class="btn" id="again">Пройти заново и разозлить Бипа меньше</button><button class="btn good" id="home">В меню</button></div></div>`;
- initSend(g);$('#again').onclick=()=>{delete SAVED[LV];Object.keys(DR).forEach(k=>{if(k.startsWith(LV+':'))delete DR[k]});start(LV)};$('#home').onclick=()=>$('#back').click()}
+ if(!SENT[LV])initSend(g);$('#again').onclick=()=>{delete SAVED[LV];delete SENT[LV];Object.keys(DR).forEach(k=>{if(k.startsWith(LV+':'))delete DR[k]});start(LV)};$('#home').onclick=()=>$('#back').click()}
 function mood(m,l){const r=$('#r1');r.className='robot';void r.offsetWidth;r.className='robot '+m+(l?' a'+l:'')}
 function say(t,kind){clearInterval(typer);const b=$('#bubble');b.className='bubble '+(kind||'');b.innerHTML='';const r=$('#r1');
  if(!r.classList.contains('happy')&&!r.classList.contains('angry'))r.classList.add('talk');
