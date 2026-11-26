@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Результаты учеников</title>
+<style>
+  :root { --bg:#f3f5f9; --card:#fff; --text:#1d2433; --muted:#667085; --accent:#2f6fed; --line:#dde2ec; --ok:#1a8f4a; --err:#c53030; --okbg:rgba(26,143,74,.14); }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14171f; --card:#1e232e; --text:#e8ebf2; --muted:#9aa3b5; --accent:#6c9bff; --line:#323a4a; --ok:#4cc27d; --err:#ff7b7b; --okbg:rgba(76,194,125,.16); }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 Arial, "Segoe UI", sans-serif; }
+  .wrap { max-width:1100px; margin:0 auto; padding:16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:16px; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  .muted { color:var(--muted); }
+  label { display:block; font-weight:bold; margin:12px 0 4px; }
+  input[type=text], input[type=password], select { width:100%; padding:10px 12px; font-size:16px; font-family:inherit; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text); }
+  button { background:var(--accent); color:#fff; border:0; border-radius:8px; padding:11px 20px; font-size:16px; cursor:pointer; }
+  button.sec { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+  button:disabled { opacity:.5; cursor:default; }
+  .hidden { display:none !important; }
+  .err { color:var(--err); margin-top:10px; min-height:1.2em; white-space:pre-wrap; }
+  .warn { background:rgba(255,190,50,.18); border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin:0 0 12px; }
+  .chk { display:flex; align-items:center; gap:8px; font-weight:normal; margin-top:12px; }
+  details summary { cursor:pointer; color:var(--accent); margin-top:12px; }
+  details ol { padding-left:20px; }
+  .top { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+  .top .btns { display:flex; gap:8px; }
+  .bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .bar select, .bar input[type=text] { width:auto; min-width:150px; padding:8px 10px; font-size:15px; }
+  .bar .sp { flex:1; }
+  .bar button { padding:8px 14px; font-size:15px; }
+  .scroll { overflow-x:auto; margin-top:12px; }
+  table { border-collapse:collapse; width:100%; font-size:15px; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th { color:var(--muted); font-size:13px; position:sticky; top:0; background:var(--card); }
+  tbody tr:hover td { background:var(--bg); }
+  td.c, th.c { text-align:center; }
+  td.okc { background:var(--okbg); }
+  td.no { color:var(--muted); }
+  td small { color:var(--muted); display:block; font-size:12px; line-height:1.2; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="loginCard" class="card">
+    <h1>Результаты учеников</h1>
+    <div class="muted">Страница для учителя. Ученикам она не нужна: без токена она пустая.</div>
+    <label for="repo">Репозиторий с результатами (логин/имя)</label>
+    <input type="text" id="repo" placeholder="ivanov/result" autocomplete="off">
+    <label for="token">Токен GitHub (только чтение)</label>
+    <input type="password" id="token" placeholder="github_pat_..." autocomplete="off">
+    <label class="chk"><input type="checkbox" id="remember"> Запомнить на этом компьютере (не отмечайте на чужих)</label>
+    <button id="btnLogin" style="margin-top:16px">Открыть</button>
+    <div class="err" id="loginErr"></div>
+    <details>
+      <summary>Как получить токен (один раз)</summary>
+      <ol>
+        <li>GitHub → ваш аватар → Settings → Developer settings → Personal access tokens → <b>Fine-grained tokens</b> → Generate new token.</li>
+        <li>Token name: например «просмотр результатов». Expiration: например, 1 год.</li>
+        <li>Repository access → <b>Only select repositories</b> → выберите репозиторий с результатами (<b>result</b>).</li>
+        <li>Permissions → Repository permissions → <b>Issues: Read-only</b> (достаточно чтения, записывать ничего не нужно).</li>
+        <li>Generate token → скопируйте токен (он показывается один раз) и вставьте выше. Это <b>другой</b> токен, не тот, что в Cloudflare.</li>
+      </ol>
+    </details>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="card top">
+      <div><b id="repoName"></b><div class="muted" id="loadedInfo"></div></div>
+      <div class="btns"><button class="sec" id="btnReload">Обновить</button><button class="sec" id="btnLogout">Выйти</button></div>
+    </div>
+
+    <div class="card">
+      <div id="notice"></div>
+      <div class="bar">
+        <select id="view" aria-label="Что показать">
+          <option value="class">Таблица класса</option>
+          <option value="last">Последние отправки</option>
+        </select>
+        <select id="fClass" aria-label="Класс"></select>
+        <select id="fApp" aria-label="Приложение"></select>
+        <input type="text" id="fText" placeholder="Поиск по фамилии…">
+        <span class="sp"></span>
+        <button class="sec" id="btnCsv">Скачать CSV</button>
+      </div>
+      <div class="muted" id="hint" style="margin-top:8px"></div>
+      <div class="scroll" id="out"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+/* Названия приложений и уроков. Ключ — то, что страница присылает в поле «Страница». */
+const APPS = {
+  python: { name:'Бип учит Python', levels:['Ввод и вывод', 'Числа: int и float', 'Переменные', 'Математика', 'Ветвление', 'Цикл for', 'Цикл while', 'Практика'] }
+};
+const appName = p => APPS[p] ? APPS[p].name : p;
+const lessonName = (p, l) => (APPS[p] && APPS[p].levels[l - 1]) || ('урок ' + l);
+const collator = new Intl.Collator('ru', { numeric:true });
+
+const S = { repo:'', token:'', rows:[], loadedAt:null };
+
+async function api(path) {
+  const r = await fetch('https://api.github.com' + path, { cache:'no-store', headers:{
+    Authorization:'Bearer ' + S.token, Accept:'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28' } });
+  if (!r.ok) {
+    let text = 'GitHub: ' + r.status;
+    if (r.status === 401) text = 'Токен недействителен или истёк. Выйдите и введите новый токен.';
+    else if (r.status === 403 && r.headers.get('x-ratelimit-remaining') === '0') text = 'GitHub временно ограничил запросы. Подождите несколько минут.';
+    else if (r.status === 403 || r.status === 404) text = 'Нет доступа к «' + S.repo + '». Проверьте имя репозитория и что в токене выбран именно он с правом Issues: Read-only.';
+    const e = new Error(text); e.status = r.status; throw e;
+  }
+  return r;
+}
+
+function parseIssue(i) {
+  if (i.pull_request) return null;
+  const b = i.body || '';
+  const g = k => { const m = new RegExp('\\*\\*' + k + ':\\*\\*[ \\t]*(.+)').exec(b); return m ? m[1].trim() : ''; };
+  const surname = g('Ученик'), cls = g('Класс');
+  const lm = /^(\d+)/.exec(g('Урок'));
+  if (!surname || !cls || !lm) return null;
+  return { n:i.number, url:i.html_url, ts:i.created_at, surname, cls, page:g('Страница') || 'python', level:+lm[1],
+    stars:(g('Оценка').match(/⭐/g) || []).length, errors:parseInt(g('Ошибок всего'), 10) || 0 };
+}
+async function loadAll() {
+  const rows = []; let seen = 0;
+  for (let page = 1; page <= 30; page++) {
+    const list = await (await api(`/repos/${S.repo}/issues?state=open&per_page=100&page=${page}`)).json();
+    seen += list.length;
+    list.forEach(i => { const r = parseIssue(i); if (r) rows.push(r); });
+    if (list.length < 100) break;
+  }
+  S.rows = rows; S.loadedAt = new Date();
+}
+
+/* ───── вид ───── */
+function fillSelect(sel, items, allLabel, keepIfPossible = true) {
+  const cur = sel.value; sel.innerHTML = '';
+  if (allLabel) sel.appendChild(new Option(allLabel, ''));
+  items.forEach(([v, t]) => sel.appendChild(new Option(t, v)));
+  if (keepIfPossible && [...sel.options].some(o => o.value === cur)) sel.value = cur;
+}
+function setupFilters() {
+  const view = $('#view').value;
+  const classes = [...new Set(S.rows.map(r => r.cls))].sort(collator.compare);
+  fillSelect($('#fClass'), classes.map(c => [c, c]), view === 'last' ? 'Все классы' : '');
+  if (view === 'class' && !$('#fClass').value && classes.length) $('#fClass').value = classes[0];
+  const apps = [...new Set(S.rows.map(r => r.page))].sort(collator.compare);
+  fillSelect($('#fApp'), apps.map(a => [a, appName(a)]), apps.length > 1 && view === 'last' ? 'Все приложения' : '');
+  $('#fApp').classList.toggle('hidden', apps.length < 2);
+  $('#fText').classList.toggle('hidden', false);
+}
+const fmtDate = ts => new Date(ts).toLocaleString('ru-RU', { dateStyle:'short', timeStyle:'short' });
+const starsText = n => n ? '⭐'.repeat(n) : '—';
+
+function lastRows() {
+  const c = $('#fClass').value, a = $('#fApp').value, t = $('#fText').value.trim().toLowerCase();
+  return S.rows.filter(r => (!c || r.cls === c) && (!a || r.page === a) && (!t || r.surname.toLowerCase().includes(t)))
+    .sort((x, y) => y.ts.localeCompare(x.ts));
+}
+function buildMatrix() {
+  const c = $('#fClass').value, a = $('#fApp').value || (S.rows[0] && S.rows[0].page), t = $('#fText').value.trim().toLowerCase();
+  const rows = S.rows.filter(r => r.cls === c && r.page === a);
+  const maxL = Math.max(APPS[a] ? APPS[a].levels.length : 0, ...rows.map(r => r.level), 0);
+  const st = new Map();
+  rows.forEach(r => {
+    const k = r.surname.toLowerCase(); let s = st.get(k);
+    if (!s) { s = { name:r.surname, best:{}, n:{} }; st.set(k, s); }
+    const b = s.best[r.level];
+    if (!b || r.stars > b.stars || (r.stars === b.stars && r.errors < b.errors)) s.best[r.level] = r;
+    s.n[r.level] = (s.n[r.level] || 0) + 1;
+  });
+  const students = [...st.values()].filter(s => !t || s.name.toLowerCase().includes(t)).sort((x, y) => collator.compare(x.name, y.name));
+  return { c, a, maxL, students };
+}
+
+function render() {
+  setupFilters();
+  const view = $('#view').value, out = $('#out'); out.innerHTML = '';
+  $('#btnCsv').disabled = !S.rows.length;
+  if (!S.rows.length) { out.appendChild(el('div', 'muted', 'Пока нет ни одного результата. Закрытые записи (Closed) здесь не показываются.')); $('#hint').textContent = ''; return; }
+  if (view === 'last') {
+    const rows = lastRows(), show = rows.slice(0, 200);
+    $('#hint').textContent = 'Показаны последние ' + show.length + ' из ' + rows.length + ' отправок (новые сверху). Нажмите на дату, чтобы открыть запись на GitHub.';
+    const t = el('table'), h = el('tr');
+    ['Дата', 'Класс', 'Фамилия', 'Урок', 'Оценка', 'Ошибок'].forEach(x => h.appendChild(el('th', '', x))); t.appendChild(el('thead')).appendChild(h);
+    const tb = el('tbody');
+    show.forEach(r => {
+      const tr = el('tr'), d = el('td'), a = el('a', '', fmtDate(r.ts)); a.href = r.url; a.target = '_blank'; a.rel = 'noopener'; d.appendChild(a); tr.appendChild(d);
+      [r.cls, r.surname, (S.rows.some(x => x.page !== r.page) ? appName(r.page) + ' — ' : '') + r.level + '. ' + lessonName(r.page, r.level), starsText(r.stars), String(r.errors)]
+        .forEach(v => tr.appendChild(el('td', '', v)));
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb); out.appendChild(t);
+  } else {
+    const m = buildMatrix();
+    if (!m.students.length) { out.appendChild(el('div', 'muted', 'В этом классе пока нет результатов.')); $('#hint').textContent = ''; return; }
+    $('#hint').textContent = 'Класс ' + m.c + ', ' + appName(m.a) + '. В клетке — лучший результат за урок (звёзды и ошибки); «—» значит, что урок не отправлен. Ученики с одинаковой фамилией в одном классе объединяются.';
+    const t = el('table'), h = el('tr'); h.appendChild(el('th', '', 'Фамилия'));
+    for (let l = 1; l <= m.maxL; l++) { const th = el('th', 'c', String(l)); th.title = lessonName(m.a, l); h.appendChild(th); }
+    h.appendChild(el('th', 'c', 'Пройдено')); t.appendChild(el('thead')).appendChild(h);
+    const tb = el('tbody');
+    m.students.forEach(s => {
+      const tr = el('tr'); tr.appendChild(el('td', '', s.name)); let done = 0;
+      for (let l = 1; l <= m.maxL; l++) {
+        const b = s.best[l], td = el('td', 'c');
+        if (b) { done++; td.className = 'c okc'; td.textContent = '⭐' + b.stars; const sm = el('small', '', b.errors + ' ош.' + (s.n[l] > 1 ? ' · ×' + s.n[l] : '')); td.appendChild(sm); td.title = lessonName(m.a, l) + '\nПоследняя отправка: ' + fmtDate(S.rows.filter(r => r.cls === m.c && r.page === m.a && r.level === l && r.surname.toLowerCase() === s.name.toLowerCase()).map(r => r.ts).sort().pop()); }
+        else { td.className = 'c no'; td.textContent = '—'; }
+        tr.appendChild(td);
+      }
+      tr.appendChild(el('td', 'c', done + ' из ' + m.maxL)); tb.appendChild(tr);
+    });
+    t.appendChild(tb); out.appendChild(t);
+  }
+}
+
+function csvDownload(name, lines) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\r\n')], { type:'text/csv;charset=utf-8' }));
+  a.download = name; a.click(); URL.revokeObjectURL(a.href);
+}
+const q = v => '"' + String(v).replace(/"/g, '""') + '"';
+$('#btnCsv').onclick = () => {
+  if ($('#view').value === 'last') {
+    const lines = [['Дата', 'Класс', 'Фамилия', 'Приложение', 'Урок', 'Название урока', 'Звёзды', 'Ошибок'].map(q).join(';')];
+    lastRows().slice().reverse().forEach(r => lines.push([new Date(r.ts).toLocaleString('ru-RU'), r.cls, r.surname, appName(r.page), r.level, lessonName(r.page, r.level), r.stars, r.errors].map(q).join(';')));
+    csvDownload('results-last.csv', lines);
+  } else {
+    const m = buildMatrix(), head = ['Фамилия']; for (let l = 1; l <= m.maxL; l++) head.push(l + '. ' + lessonName(m.a, l)); head.push('Пройдено');
+    const lines = [head.map(q).join(';')];
+    m.students.forEach(s => { const row = [s.name]; let done = 0; for (let l = 1; l <= m.maxL; l++) { const b = s.best[l]; if (b) { done++; row.push(b.stars + ' зв., ' + b.errors + ' ош.'); } else row.push(''); } row.push(done + ' из ' + m.maxL); lines.push(row.map(q).join(';')); });
+    csvDownload('class-' + m.c + '.csv', lines);
+  }
+};
+
+['#view', '#fClass', '#fApp'].forEach(id => $(id).onchange = render);
+$('#fText').oninput = render;
+
+/* ───── вход ───── */
+function saveCreds(remember) {
+  const v = JSON.stringify({ repo:S.repo, token:S.token });
+  try { sessionStorage.removeItem('qres'); localStorage.removeItem('qres'); (remember ? localStorage : sessionStorage).setItem('qres', v); } catch (e) {}
+}
+function loadCreds() { try { return JSON.parse(sessionStorage.getItem('qres') || localStorage.getItem('qres') || 'null'); } catch (e) { return null; } }
+
+async function reload() {
+  $('#btnReload').disabled = true;
+  try { await loadAll(); $('#loadedInfo').textContent = 'Открытых записей: ' + S.rows.length + '. Обновлено в ' + S.loadedAt.toLocaleTimeString('ru-RU', { timeStyle:'short' }) + '.'; render(); }
+  finally { $('#btnReload').disabled = false; }
+}
+async function login(repo, token, remember) {
+  S.repo = repo.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\.git$/, '').replace(/\/$/, ''); S.token = token.trim();
+  if (!/^[\w.-]+\/[\w.-]+$/.test(S.repo)) throw new Error('Репозиторий укажите в виде «логин/имя», например ivanov/result.');
+  if (!S.token) throw new Error('Вставьте токен.');
+  const info = await (await api('/repos/' + S.repo)).json();
+  saveCreds(remember);
+  $('#loginCard').classList.add('hidden'); $('#app').classList.remove('hidden'); $('#repoName').textContent = S.repo;
+  $('#notice').innerHTML = '';
+  if (info.private === false) { const w = el('div', 'warn', 'Внимание: репозиторий публичный, фамилии детей в нём видны всем. Сделайте его приватным: Settings → Danger Zone → Change visibility.'); $('#notice').appendChild(w); }
+  await reload();
+}
+$('#btnLogin').onclick = async () => {
+  $('#loginErr').textContent = ''; $('#btnLogin').disabled = true;
+  try { await login($('#repo').value, $('#token').value, $('#remember').checked); }
+  catch (e) { $('#loginErr').textContent = e.message; $('#loginCard').classList.remove('hidden'); $('#app').classList.add('hidden'); }
+  $('#btnLogin').disabled = false;
+};
+$('#btnReload').onclick = async () => { try { await reload(); } catch (e) { $('#out').innerHTML = ''; $('#out').appendChild(el('div', 'err', e.message)); } };
+$('#btnLogout').onclick = () => { try { sessionStorage.removeItem('qres'); localStorage.removeItem('qres'); } catch (e) {} S.token = ''; location.reload(); };
+
+(() => {
+  const h = location.hostname;
+  if (h.endsWith('.github.io')) $('#repo').value = h.split('.')[0] + '/result';
+  const c = loadCreds();
+  if (c && c.repo && c.token) { $('#repo').value = c.repo; $('#token').value = c.token; $('#remember').checked = !!localStorage.getItem('qres'); $('#btnLogin').click(); }
+})();
+</script>
+</body>
+</html>
