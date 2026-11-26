@@ -91,6 +91,12 @@
   .pv .key { color:var(--ok); font-size:14px; margin-top:4px; }
   .pv .verdict { font-weight:bold; margin-top:6px; } .pv .res-ok .verdict { color:var(--ok); } .pv .res-bad .verdict { color:var(--err); }
   .pv .big { font-size:34px; font-weight:bold; margin:4px 0; }
+  /* результаты учеников */
+  .rtbl { width:100%; border-collapse:collapse; font-size:15px; margin-top:8px; }
+  .rtbl th, .rtbl td { text-align:left; padding:7px 9px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  .rtbl th { color:var(--muted); font-weight:bold; font-size:13px; }
+  .rtbl tr:hover td { background:var(--bg); }
+  .rmsg { margin-top:10px; white-space:pre-wrap; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -156,6 +162,35 @@
         <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
         <label for="perTest" style="margin-top:0">Вопросов у ученика в каждом тесте</label>
         <div class="inline"><input type="number" id="perTest" min="1" max="100" value="5"><button class="sec" id="btnPer">Применить</button></div>
+      </div>
+
+      <div class="card" id="resCard">
+        <h2>Результаты учеников</h2>
+        <div class="muted">В конце урока ученик получает код и присылает его вам. Вставьте коды сюда: они проверяются и сохраняются в файл results.json
+          в отдельном <b>приватном</b> репозитории (в публичном сайте фамилии детей лежать не должны).</div>
+        <label for="resRepo">Репозиторий для результатов (приватный)</label>
+        <input type="text" id="resRepo" placeholder="ivanov/bip-results" autocomplete="off">
+        <details>
+          <summary>Как настроить (один раз)</summary>
+          <ol>
+            <li>На GitHub создайте новый репозиторий, например <b>bip-results</b>, с пометкой <b>Private</b>.</li>
+            <li>Settings → Developer settings → Fine-grained tokens → ваш токен → Edit → Repository access → добавьте <b>bip-results</b> (право Contents: Read and write остаётся).</li>
+            <li>Впишите имя репозитория выше и нажмите «Загрузить журнал».</li>
+          </ol>
+        </details>
+        <label for="resCodes">Вставьте коды (по одному или сразу много, можно вместе с текстом сообщений)</label>
+        <textarea id="resCodes" rows="4" placeholder="BIP1.…"></textarea>
+        <div class="tbar"><button id="btnResAdd">Добавить в журнал</button><button class="sec" id="btnResLoad">Загрузить журнал</button></div>
+        <div id="resMsg" class="rmsg muted"></div>
+        <div class="tbar" id="resBar" style="margin-top:14px">
+          <select id="resClass"></select>
+          <select id="resLesson"></select>
+          <input type="text" id="resText" placeholder="Поиск по фамилии…">
+          <span class="sp"></span>
+          <span class="muted" id="resInfo"></span>
+          <button class="sec small" id="btnResCsv">Скачать CSV</button>
+        </div>
+        <div id="resList" style="overflow-x:auto"></div>
       </div>
     </div>
 
@@ -461,6 +496,8 @@ async function login(repo, token, remember) {
   const pub = await fetchText('docs/tests.json');
   try { if (pub) $('#perTest').value = JSON.parse(pub).per_test || 5; } catch (e) {}
   await refresh();
+  let rr = ''; try { rr = localStorage.getItem('qa_res_repo') || ''; } catch (e) {}
+  if (rr) { $('#resRepo').value = rr; try { await resOpen(); await resRead(); renderResults(); resMsg('Загружено записей: ' + RES.rows.length + '.'); } catch (e) { resMsg(e.message, 'err'); } }
 }
 $('#btnLogin').onclick = async () => {
   $('#loginErr').textContent = ''; $('#btnLogin').disabled = true;
@@ -1058,6 +1095,122 @@ async function saveEditor() {
   status('Сохранено: «' + payload.title + '». Сайт обновится через 1–2 минуты.', 'ok');
 }
 $('#btnNew').onclick = () => startEditor({ id:null, test:{ title:'', classes:[], questions:[] } });
+
+/* ───── Результаты учеников ───── */
+const RES_APPS = { py:{ name:'Бип учит Python', levels:['Ввод и вывод','Числа: int и float','Переменные','Математика','Ветвление','Цикл for','Цикл while','Практика'] } };
+const RES = { repo:'', branch:'main', sha:null, rows:[] };
+function h53(str, seed = 0) { // тот же расчёт, что на странице урока
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+}
+function lessonName(page, level) { const a = RES_APPS[page]; return a && a.levels[level - 1] ? a.levels[level - 1] : 'урок ' + level; }
+function appName(page) { return RES_APPS[page] ? RES_APPS[page].name : page; }
+function parseCode(token) {
+  const m = /^BIP1\.([A-Za-z0-9_-]+)\.([0-9a-f]{14})/.exec(token);
+  if (!m || h53('bip1|' + m[1]).toString(16).padStart(14, '0') !== m[2]) return null;
+  try {
+    const bin = atob(m[1].replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((m[1].length + 3) % 4));
+    const a = JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0))));
+    const int = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
+    if (!Array.isArray(a) || a.length !== 8 || !/^[a-z]{1,10}$/.test(a[0]) || typeof a[1] !== 'string' || !a[1] || a[1].length > 40 || typeof a[2] !== 'string' || !a[2] || a[2].length > 8
+      || !int(a[3], 1, 99) || !int(a[4], 0, 5) || !int(a[5], 0, 9999) || !Array.isArray(a[6]) || a[6].length > 60 || !a[6].every(n => int(n, 0, 999)) || typeof a[7] !== 'string') return null;
+    const min = parseInt(a[7], 36); if (!Number.isFinite(min)) return null;
+    return { id:m[2], page:a[0], surname:a[1], cls:a[2], level:a[3], stars:a[4], errors:a[5], tasks:a[6], ts:new Date(min * 60000).toISOString() };
+  } catch (e) { return null; }
+}
+async function resCall(fn) {
+  try { return await fn(); }
+  catch (e) {
+    if (e.status === 403 || e.status === 404) { const x = new Error('Нет доступа к репозиторию «' + RES.repo + '». Проверьте имя и что он добавлен в токен (Repository access) с правом Contents: Read and write.'); x.status = e.status; throw x; }
+    throw e;
+  }
+}
+async function resOpen() {
+  const repo = $('#resRepo').value.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\.git$/, '').replace(/\/$/, '');
+  if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) throw new Error('Репозиторий результатов укажите в виде «логин/имя», например ivanov/bip-results.');
+  if (repo.toLowerCase() === GH.repo.toLowerCase()) throw new Error('Это репозиторий сайта: он публичный, и фамилии детей были бы видны всем. Создайте отдельный приватный репозиторий.');
+  const info = await resCall(async () => (await gh('/repos/' + repo)).json());
+  if (!info.private) throw new Error('Репозиторий «' + repo + '» публичный. Фамилии детей в нём увидит любой — сделайте его приватным (Settings → Danger Zone → Change visibility).');
+  if (info.permissions && !info.permissions.push) throw new Error('У токена нет права записи в «' + repo + '» (нужно Contents: Read and write).');
+  RES.repo = repo; RES.branch = info.default_branch || 'main';
+  try { localStorage.setItem('qa_res_repo', repo); } catch (e) {}
+}
+async function resRead() {
+  try {
+    const d = await (await gh(`/repos/${RES.repo}/contents/results.json?ref=${encodeURIComponent(RES.branch)}&t=${Date.now()}`)).json();
+    const txt = new TextDecoder().decode(Uint8Array.from(atob(d.content.replace(/\s/g, '')), c => c.charCodeAt(0)));
+    const rows = JSON.parse(txt); if (!Array.isArray(rows)) throw new Error('bad');
+    RES.sha = d.sha; RES.rows = rows;
+  } catch (e) {
+    if (e.status === 404) { RES.sha = null; RES.rows = []; return; }
+    if (e instanceof SyntaxError || e.message === 'bad') throw new Error('Файл results.json в «' + RES.repo + '» повреждён.');
+    throw e;
+  }
+}
+async function resWrite(msg) {
+  const text = '[\n' + RES.rows.map(r => JSON.stringify(r)).join(',\n') + '\n]\n';
+  const body = { message:msg, content:b64(new TextEncoder().encode(text)), branch:RES.branch }; if (RES.sha) body.sha = RES.sha;
+  const r = await gh(`/repos/${RES.repo}/contents/results.json`, { method:'PUT', body:JSON.stringify(body) });
+  RES.sha = (await r.json()).content.sha;
+}
+function resMsg(t, cls) { const m = $('#resMsg'); m.textContent = t; m.className = 'rmsg ' + (cls || 'muted'); }
+function renderResults() {
+  const rows = RES.rows.slice().sort((a, b) => b.ts.localeCompare(a.ts));
+  const keep = (id, vals, all) => { const s = $(id), cur = s.value; s.innerHTML = ''; s.appendChild(new Option(all, '')); vals.forEach(v => s.appendChild(new Option(v[1], v[0]))); if ([...s.options].some(o => o.value === cur)) s.value = cur; };
+  keep('#resClass', [...new Set(rows.map(r => r.cls))].sort((a, b) => a.localeCompare(b, 'ru', { numeric:true })).map(c => [c, c]), 'Все классы');
+  const lessons = new Map(); rows.forEach(r => lessons.set(r.page + ':' + r.level, [r.page, r.level]));
+  keep('#resLesson', [...lessons].sort((a, b) => a[0].localeCompare(b[0], 'ru', { numeric:true })).map(([k, [p, l]]) => [k, appName(p) + ' — ' + l + '. ' + lessonName(p, l)]), 'Все уроки');
+  const fc = $('#resClass').value, fl = $('#resLesson').value, ft = $('#resText').value.trim().toLowerCase();
+  const view = rows.filter(r => (!fc || r.cls === fc) && (!fl || r.page + ':' + r.level === fl) && (!ft || r.surname.toLowerCase().includes(ft)));
+  $('#resInfo').textContent = rows.length ? 'Показано ' + view.length + ' из ' + rows.length : '';
+  const box = $('#resList'); box.innerHTML = '';
+  if (!rows.length) { box.appendChild(el('div', 'muted', 'Журнал пока пуст или не загружен.')); return; }
+  const t = el('table', 'rtbl'), hr = el('tr'); ['Дата', 'Класс', 'Фамилия', 'Урок', 'Оценка', 'Ошибок'].forEach(h => hr.appendChild(el('th', '', h))); t.appendChild(hr);
+  view.forEach(r => {
+    const tr = el('tr');
+    [new Date(r.ts).toLocaleString('ru-RU', { dateStyle:'short', timeStyle:'short' }), r.cls, r.surname, appName(r.page) + ' — ' + r.level + '. ' + lessonName(r.page, r.level), '⭐'.repeat(r.stars) || '—', String(r.errors)]
+      .forEach(v => tr.appendChild(el('td', '', v)));
+    t.appendChild(tr);
+  });
+  box.appendChild(t);
+}
+$('#btnResLoad').onclick = () => guarded(async () => { await resOpen(); await resRead(); renderResults(); resMsg('Загружено записей: ' + RES.rows.length + '.'); }, 'Загружаем журнал…').then(ok => { if (ok) status(''); });
+$('#btnResAdd').onclick = async () => {
+  const text = $('#resCodes').value, tokens = text.match(/BIP1\.\S*/g) || [];
+  if (!tokens.length) { resMsg('В тексте не найдено ни одного кода (он начинается с BIP1.).', 'err'); return; }
+  const fresh = new Map(); let bad = 0;
+  tokens.forEach(tk => { const r = parseCode(tk); if (r) fresh.set(r.id, r); else bad++; });
+  let added = 0, dup = 0;
+  const ok = await guarded(async () => {
+    await resOpen();
+    for (let attempt = 0; ; attempt++) {
+      await resRead();
+      const have = new Set(RES.rows.map(r => r.id)); added = 0; dup = 0;
+      fresh.forEach(r => { if (have.has(r.id)) dup++; else { RES.rows.push(r); added++; } });
+      if (!added) return;
+      try { await resCall(() => resWrite('Результаты: +' + added)); return; }
+      catch (e) { if (attempt < 2 && (e.status === 409 || e.status === 422)) continue; throw e; }
+    }
+  }, 'Сохраняем в GitHub…');
+  if (!ok) return;
+  status('');
+  renderResults();
+  resMsg('Добавлено: ' + added + (dup ? ', уже были: ' + dup : '') + (bad ? '\nНе удалось прочитать кодов: ' + bad + ' (код мог обрезаться при копировании или быть изменён).' : '') + '\nВсего в журнале: ' + RES.rows.length + '.', bad ? 'err' : 'ok');
+  if (added || !bad) $('#resCodes').value = bad ? text : '';
+};
+['#resClass', '#resLesson'].forEach(id => $(id).onchange = renderResults);
+$('#resText').oninput = renderResults;
+$('#btnResCsv').onclick = () => {
+  if (!RES.rows.length) return;
+  const q = v => '"' + String(v).replace(/"/g, '""') + '"';
+  const lines = [['Дата', 'Класс', 'Фамилия', 'Приложение', 'Урок', 'Название урока', 'Звёзды', 'Ошибок'].map(q).join(';')];
+  RES.rows.slice().sort((a, b) => a.ts.localeCompare(b.ts)).forEach(r => lines.push([new Date(r.ts).toLocaleString('ru-RU'), r.cls, r.surname, appName(r.page), r.level, lessonName(r.page, r.level), r.stars, r.errors].map(q).join(';')));
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\r\n')], { type:'text/csv;charset=utf-8' })); a.download = 'results.csv'; a.click(); URL.revokeObjectURL(a.href);
+};
+renderResults();
 
 /* подсказка репозитория и автовход */
 (() => {

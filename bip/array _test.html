@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fff7e6">
+<script>
+(function(){var t;try{t=localStorage.getItem('bip-theme')}catch(e){}
+if(t!=='dark'&&t!=='light')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<title>Бип учит массивы</title>
+<style>
+:root{--bg:#fff7e6;--card:#ffffff;--text:#23283a;--muted:#6b7089;--accent:#ff7a1a;--accent-t:#ffffff;--line:#f0dfbf;--good:#1f9d55;--bad:#e03a3a;--code:#1d2233;--code-t:#e9ecff;--glow:#ffd99a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{color-scheme:light}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#151829;--card:#1f2340;--text:#eef0fa;--muted:#a4aacb;--line:#363c63;--good:#3ddc84;--bad:#ff6b6b;--code:#0e1120;--glow:#3a3320}
+.theme-anim,.theme-anim *{transition:background-color .35s ease,border-color .35s ease,color .35s ease!important}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Nunito","Trebuchet MS",system-ui,sans-serif;font-size:17px;line-height:1.5;min-height:100vh}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1,h2{font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif;margin:0;line-height:1.15}
+button{font:inherit;cursor:pointer;border:0;border-radius:14px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn{background:var(--accent);color:var(--accent-t);font-weight:800;padding:13px 20px;width:100%;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.18)}
+.btn.good{background:var(--good)}
+.ghost{background:transparent;color:var(--muted);padding:8px 10px;font-weight:700}
+.ghost:disabled{opacity:.35;cursor:not-allowed}
+.navbtn{width:42px;height:42px;flex:none;border-radius:50%;background:var(--accent);color:var(--accent-t);font-size:24px;font-weight:800;line-height:1;display:grid;place-items:center;padding:0;box-shadow:0 3px 0 rgba(0,0,0,.18)}
+.navbtn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.18)}
+.navbtn:disabled{opacity:.35;cursor:not-allowed}
+.home-btn{margin-left:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 16px 0 12px;border-radius:16px;white-space:nowrap;background:var(--card);border:2px solid var(--line);color:var(--text);font-weight:800;font-size:.95rem;text-decoration:none;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.08);transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}
+.home-btn svg{width:22px;height:22px;flex:none;stroke:var(--accent);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.home-btn .arr{margin-right:-2px;transition:transform .25s ease}
+.home-btn:hover,.home-btn:focus-visible{border-color:var(--accent);transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.08);outline:none}
+.home-btn:hover .arr,.home-btn:focus-visible .arr{transform:translateX(-5px)}
+.home-btn .house{transition:transform .25s ease}
+.home-btn:hover .house{transform:rotate(-8deg) scale(1.1)}
+.theme-btn{flex:none;width:46px;height:46px;border-radius:16px;cursor:pointer;display:grid;place-items:center;padding:0;background:var(--card);border:2px solid var(--line);color:var(--text);box-shadow:0 4px 0 rgba(0,0,0,.08);transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}
+.theme-btn:hover{border-color:var(--accent);transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.08)}
+.theme-btn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.theme-btn .sun{display:none}
+:root[data-theme="dark"] .theme-btn .sun{display:block}
+:root[data-theme="dark"] .theme-btn .moon{display:none}
+@media (max-width:480px){.home-btn{padding:0 12px}.home-btn span{display:none}}
+/* ---------- оверлей перехода ---------- */
+.ov{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:rgba(255,247,230,.97);backdrop-filter:blur(6px);opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease}
+:root[data-theme="dark"] .ov{background:rgba(21,24,41,.97)}
+.ov.show{opacity:1;visibility:visible}
+.ov-box{text-align:center;transform:scale(.94);transition:transform .3s ease}
+.ov.show .ov-box{transform:scale(1)}
+.ov .robot{width:130px;height:152px;margin:0 auto;animation:ovJump .45s ease-in-out infinite alternate}
+@keyframes ovJump{to{transform:translateY(-16px) rotate(3deg)}}
+.ov-name{font-family:"Fredoka",system-ui,sans-serif;font-size:clamp(1.4rem,4vw,2rem);margin:16px 0 18px}
+.ov-bar{width:min(340px,72vw);height:10px;margin:0 auto 14px;border-radius:999px;background:var(--line);overflow:hidden}
+.ov-bar span{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--accent),#ffb020);transition:width .05s linear}
+.ov-status{color:var(--muted);font-weight:700;font-size:.95rem}
+.hide{display:none!important}
+
+/* robot */
+.robot{width:120px;height:140px;flex:none;transform-origin:50% 100%}
+.robot svg{width:100%;height:100%;overflow:visible}
+.robot .face-s,.robot .face-a,.robot .brow{display:none}
+.robot .eye{fill:#5ee0ff;transition:fill .2s}
+.robot .ball{fill:#ffb020}
+.robot .armL,.robot .armR{transform-box:fill-box;transform-origin:50% 10%;transition:transform .3s}
+.robot.talk .face-n{animation:talk .22s infinite alternate}
+@keyframes talk{to{transform:scaleY(2.2)}}
+.face-n{transform-box:fill-box;transform-origin:center}
+.robot.happy{animation:jump .5s 3}
+.robot.happy .eye{fill:#7dff9a}
+.robot.happy .face-n,.robot.angry .face-n{display:none}
+.robot.happy .face-s{display:block}
+.robot.happy .armL{transform:rotate(150deg)}
+.robot.happy .armR{transform:rotate(-150deg)}
+@keyframes jump{50%{transform:translateY(-22px) rotate(4deg)}}
+.robot.angry{animation:shake .12s 8}
+.robot.angry .eye{fill:#ff4b4b}
+.robot.angry .ball{fill:#ff3030}
+.robot.angry .face-a,.robot.angry .brow{display:block}
+.robot.angry .armL{transform:rotate(-40deg)}
+.robot.angry .armR{transform:rotate(40deg)}
+@keyframes shake{25%{transform:translateX(-6px) rotate(-2deg)}75%{transform:translateX(6px) rotate(2deg)}}
+.robot.idle{animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-5px)}}
+@media (prefers-reduced-motion:reduce){.robot,.robot *{animation:none!important}}
+
+.robot .steam{display:none;fill:#fff;opacity:.85}
+.robot.angry.a1{animation:shake .12s 2}
+.robot.angry.a1 .eye{fill:#ffb020}
+.robot.angry.a1 .face-a{display:none}
+.robot.angry.a1 .face-n{display:block}
+.robot.angry.a2{animation:shake .12s 8}
+.robot.angry.a3{animation:shake .1s 16}
+.robot.angry.a3 .steam,.robot.angry.a4 .steam{display:block;animation:puff .8s infinite}
+@keyframes puff{from{transform:translateY(6px);opacity:.9}to{transform:translateY(-24px);opacity:0}}
+.robot.angry.a4{animation:rage .09s infinite;filter:drop-shadow(0 0 14px #ff3030)}
+@keyframes rage{25%{transform:translateX(-8px) rotate(-3deg) scale(1.08)}75%{transform:translateX(8px) rotate(3deg) scale(1.08)}}
+.robot.angry.a4 .ball{animation:blink .3s infinite}
+@keyframes blink{50%{fill:#fff}}
+.robot.angry.a4 .armL{animation:flailL .2s infinite alternate}
+.robot.angry.a4 .armR{animation:flailR .2s infinite alternate}
+@keyframes flailL{from{transform:rotate(-100deg)}to{transform:rotate(-10deg)}}
+@keyframes flailR{from{transform:rotate(100deg)}to{transform:rotate(10deg)}}
+.bubble{white-space:pre-wrap}
+.meter{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);font-weight:700;margin:-22px 0 14px}
+.meter div{flex:1;height:10px;background:var(--line);border-radius:6px;overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffb020,#ff3030);transition:width .4s}
+.notes{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.notes li{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:8px 12px}
+.notes code{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--glow);padding:1px 6px;border-radius:6px;font-weight:700}
+.res h2{text-align:center;font-size:26px;margin-bottom:6px}
+.big{font-size:18px;text-align:center}
+.big b{font-size:44px;font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif;display:block;line-height:1.1}
+.gauge{position:relative;height:14px;border-radius:8px;margin:12px 6px 18px;background:linear-gradient(90deg,#1f9d55,#ffb020,#ff3030)}
+.gauge i{position:absolute;top:-5px;width:6px;height:24px;background:var(--text);border-radius:3px;transform:translateX(-50%);transition:left .8s}
+.gl{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin:-12px 6px 14px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips span{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:4px 10px;font-weight:700}
+.tbl{display:grid;gap:4px}
+.tbl div{display:flex;gap:10px;padding:6px 10px;border-radius:10px;border:2px solid transparent;font-size:15px}
+.tbl div.me{border-color:var(--accent);background:var(--glow);font-weight:800}
+.tbl span:first-child{min-width:52px}
+/* menu */
+.hero{display:flex;align-items:center;gap:8px;margin:8px 0 18px}
+.hero h1{font-size:30px}
+.hero p{margin:6px 0 0;color:var(--muted)}
+.cats{display:grid;gap:12px;list-style:none;padding:0;margin:0}
+.cat{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--card);color:var(--text);padding:14px 16px;border:2px solid var(--line);border-radius:18px}
+.cat .ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:24px;background:var(--glow);flex:none;font-family:"Fredoka",system-ui,sans-serif;font-weight:700}
+.cat b{display:block;font-size:18px}
+.cat small{color:var(--muted)}
+.cat.open{border-color:var(--accent);box-shadow:0 4px 0 var(--accent)}
+.cat.locked{opacity:.55;cursor:not-allowed}
+.cat .st{margin-left:auto;font-size:22px}
+
+/* lesson */
+.top{display:flex;align-items:center;gap:6px}
+.dots{display:flex;gap:5px;flex:1;justify-content:center}
+.dots i{height:8px;flex:1;max-width:28px;border-radius:5px;background:var(--line)}
+.dots i.on{background:var(--accent)}
+.dots i.now{background:var(--good)}
+.scene{display:flex;align-items:flex-end;gap:6px;margin:10px 0 14px}
+.bubble{position:relative;background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px 14px;flex:1;min-height:84px;margin-bottom:34px;overflow-wrap:anywhere}
+.bubble::before{content:"";position:absolute;left:-10px;bottom:18px;border:8px solid transparent;border-right:10px solid var(--line);border-left:0}
+.bubble.bad{border-color:var(--bad)}
+.bubble.ok{border-color:var(--good)}
+.bubble.bad::before{border-right-color:var(--bad)}
+.bubble.ok::before{border-right-color:var(--good)}
+pre{margin:0;font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;font-size:16px;white-space:pre-wrap;word-break:break-word}
+.code{background:var(--code);color:var(--code-t);border-radius:14px;padding:12px 14px}
+.out{background:#000;color:#8dffb0;border-radius:14px;padding:10px 14px;margin-top:8px;min-height:44px}
+.out.err{color:#ff9a9a}
+.lab{font-size:14px;color:var(--muted);font-weight:700;margin:12px 0 4px}
+.task{background:var(--glow);border-radius:14px;padding:12px 14px;font-weight:700;margin-bottom:10px;overflow-wrap:anywhere}
+.cat small.pr{display:block;margin-top:3px;font-weight:700}.bar{display:block;height:6px;border-radius:3px;background:var(--line);margin-top:5px;overflow:hidden}.bar b{display:block;height:100%;background:#2ecc71;border-radius:3px}
+.keys{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.keys button{background:var(--card);color:var(--text);border:2px solid var(--line);padding:6px 12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700}
+textarea{width:100%;min-height:110px;resize:vertical;background:var(--code);color:var(--code-t);border:2px solid transparent;border-radius:14px;padding:12px 14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:16px;line-height:1.5}
+textarea:focus{border-color:var(--accent);outline:0}
+.row{display:grid;gap:10px;margin-top:12px}
+.stars{font-size:44px;text-align:center;margin:8px 0}
+</style>
+</head>
+<body>
+<main>
+<section id="menu">
+  <div class="hero">
+    <div class="robot idle" id="r0"></div>
+    <div><h1>Бип учит массивы</h1><p>Массив — целый ряд коробочек с одним именем. Давай учиться их заполнять и обсчитывать!</p></div>
+    <a class="home-btn" href="index.html" data-home title="К выбору курса">
+      <svg class="arr" viewBox="0 0 24 24"><path d="M19 12H6M11 6l-6 6 6 6"/></svg>
+      <svg class="house" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 10v10h4.5v-5.5h4V20h4.5V10"/></svg>
+      <span>Выбор курса</span>
+    </a>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Переключить тему" title="Светлая / тёмная тема">
+      <svg class="moon" viewBox="0 0 24 24"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"/></svg>
+      <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+  </div>
+  <ul class="cats" id="cats"></ul>
+</section>
+
+<section id="lesson" class="hide">
+  <div class="top"><button class="ghost" id="back" aria-label="В меню">‹ Меню</button><button class="navbtn" id="prev" aria-label="Назад" title="Назад">‹</button><div class="dots" id="dots"></div><button class="navbtn" id="fwd" aria-label="Вперёд" title="Вперёд">›</button></div>
+  <div class="scene"><div class="robot idle" id="r1"></div><div class="bubble" id="bubble"></div></div>
+  <div class="meter"><span id="mlab">Бип спокоен</span><div><i id="mfill"></i></div></div>
+  <div id="panel"></div>
+</section>
+</main>
+
+<!-- оверлей перехода -->
+<div class="ov" id="ov" aria-hidden="true">
+  <div class="ov-box">
+    <div class="robot" id="ovRobot"></div>
+    <div class="ov-name" id="ovName">—</div>
+    <div class="ov-bar"><span id="ovFill"></span></div>
+    <div class="ov-status" id="ovStatus">Бип подключается…</div>
+  </div>
+</div>
+
+<script>
+const ROBOT=`<svg viewBox="0 0 120 140" aria-hidden="true">
+<line x1="60" y1="8" x2="60" y2="26" stroke="#8a93b8" stroke-width="4"/><circle class="ball" cx="60" cy="8" r="7"/>
+<g class="armL"><rect x="6" y="84" width="14" height="38" rx="7" fill="#8a93b8"/></g>
+<g class="armR"><rect x="100" y="84" width="14" height="38" rx="7" fill="#8a93b8"/></g>
+<rect x="26" y="80" width="68" height="50" rx="12" fill="#c9d0ee"/><rect x="44" y="94" width="32" height="20" rx="6" fill="#ff7a1a"/>
+<rect x="18" y="24" width="84" height="60" rx="18" fill="#dfe4f7" stroke="#8a93b8" stroke-width="3"/>
+<rect x="28" y="36" width="64" height="36" rx="12" fill="#1d2233"/>
+<circle class="eye" cx="46" cy="52" r="8"/><circle class="eye" cx="74" cy="52" r="8"/>
+<path class="brow" d="M36 38 L54 46 M84 38 L66 46" stroke="#ff4b4b" stroke-width="4" stroke-linecap="round"/>
+<rect class="face-n" x="50" y="62" width="20" height="3" rx="1.5" fill="#5ee0ff"/>
+<path class="face-s" d="M48 62 Q60 74 72 62" stroke="#7dff9a" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path class="face-a" d="M48 68 Q60 58 72 68" stroke="#ff4b4b" stroke-width="4" fill="none" stroke-linecap="round"/>
+<g class="steam"><circle cx="16" cy="30" r="7"/><circle cx="104" cy="30" r="7"/><circle cx="24" cy="14" r="5"/><circle cx="96" cy="14" r="5"/></g></svg>`;
+document.querySelectorAll('.robot').forEach(r=>r.innerHTML=ROBOT);
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- мини-Python: print, input, type, int, float, + - * / ---------- */
+class Fl{constructor(n){this.n=n}}
+const isF=x=>x instanceof Fl,num=x=>isF(x)?x.n:x;
+const truthy=x=>Array.isArray(x)?x.length>0:typeof x==='string'?x!=='':isF(x)?x.n!==0:!!x;
+const fmt=x=>x===null?'None':Array.isArray(x)?'['+x.map(q=>typeof q==='string'?"'"+q+"'":fmt(q)).join(', ')+']':typeof x==='string'?x:typeof x==='boolean'?(x?'True':'False'):isF(x)?(Number.isInteger(x.n)?x.n.toFixed(1):String(x.n)):String(x);
+function splitTop(s,ch){const r=[];let d=0,q=null,cur='';for(const c of s){if(q){cur+=c;if(c===q)q=null;continue}
+ if(c==='"'||c==="'"){q=c;cur+=c;continue}if(c==='('||c==='[')d++;if(c===')'||c===']')d--;
+ if(c===ch&&d===0){r.push(cur);cur='';continue}cur+=c}r.push(cur);return r}
+function call(f,a,b){if(f==='len'){if(typeof a!=='string'&&!Array.isArray(a))throw Error('len считает символы в тексте.');return a.length}if(f==='str')return fmt(a);
+ if(f==='round'||f==='abs'){if(typeof a==='string')throw Error('С текстом так считать нельзя.');
+  if(f==='abs')return isF(a)?new Fl(Math.abs(a.n)):Math.abs(a);
+  const x=num(a);if(b===undefined){let r=Math.round(x);if(Math.abs(x%1)===0.5&&r%2!==0)r--;return r}
+  const p=10**b;return new Fl(Math.round(x*p)/p)}
+ if(f==='type')return `<class '${Array.isArray(a)?'list':typeof a==='string'?'str':typeof a==='boolean'?'bool':isF(a)?'float':'int'}'>`;
+ if(f==='int'){if(typeof a==='string'){if(/^\s*-?\d+\s*$/.test(a))return Number(a);throw Error(`Не получается превратить «${a}» в целое число. Для дробных нужен float.`)}return isF(a)?Math.trunc(a.n):a}
+ if(typeof a==='string'){if(/^\s*-?\d+(\.\d+)?\s*$/.test(a))return new Fl(Number(a));throw Error(`Не получается превратить «${a}» в число. Дробь пишется через точку.`)}
+ return new Fl(num(a))}
+function bin(o,a,b){
+ if(Array.isArray(a)||Array.isArray(b)){if(o==='+'&&Array.isArray(a)&&Array.isArray(b))return a.concat(b);if(o==='*'&&Array.isArray(a)&&typeof b==='number'){const q=[];for(let k=0;k<b;k++)q.push(...a);return q}if(o==='*'&&Array.isArray(b)&&typeof a==='number'){const q=[];for(let k=0;k<a;k++)q.push(...b);return q}throw Error('С массивами работают только + (склейка) и * (повторение).')}
+ if(typeof a==='string'||typeof b==='string'){if(o==='+'&&typeof a==='string'&&typeof b==='string')return a+b;if(o==='*'&&typeof a==='string'&&typeof b==='number')return a.repeat(Math.max(0,b));if(o==='*'&&typeof b==='string'&&typeof a==='number')return b.repeat(Math.max(0,a));throw Error(o==='+'?'Нельзя складывать текст и число. Число в текст превращает str(), а ещё есть f-строки.':'С текстом так считать нельзя.')}
+ const f=isF(a)||isF(b),x=num(a),y=num(b);let r;
+ if((o==='/'||o==='//'||o==='%')&&y===0)throw Error('На ноль делить нельзя!');
+ if(o==='+')r=x+y;else if(o==='-')r=x-y;else if(o==='*')r=x*y;else if(o==='/')return new Fl(x/y);else if(o==='//')r=Math.floor(x/y);else if(o==='%')r=((x%y)+y)%y;else{r=x**y;if(!(f||y<0))return r;return new Fl(r)}
+ return f?new Fl(r):r}
+const dec=q=>q.replace(/\\(.)/g,(a,c)=>({n:'\n',t:'\t','\\':'\\','"':'"',"'":"'"}[c]??a));
+const M={upper:q=>q.toUpperCase(),lower:q=>q.toLowerCase(),capitalize:q=>q.charAt(0).toUpperCase()+q.slice(1).toLowerCase(),
+title:q=>q.toLowerCase().replace(/(^|[^A-Za-zА-Яа-яЁё])([A-Za-zА-Яа-яЁё])/g,(m,a,b)=>a+b.toUpperCase()),strip:q=>q.trim(),lstrip:q=>q.trimStart(),rstrip:q=>q.trimEnd(),
+replace:(q,a,b)=>q.split(a).join(b),split:(q,d)=>d===undefined?q.trim().split(/\s+/).filter(Boolean):q.split(d),join:(q,l)=>{if(!Array.isArray(l)||l.some(z=>typeof z!=='string'))throw Error('join склеивает список из строк.');return l.join(q)},
+find:(q,a)=>q.indexOf(a),count:(q,a)=>q.split(a).length-1,startswith:(q,a)=>q.startsWith(a),endswith:(q,a)=>q.endsWith(a),isdigit:q=>/^\d+$/.test(q),isalpha:q=>/^[A-Za-zА-Яа-яЁё]+$/.test(q)};
+const NA={replace:2,find:1,count:1,startswith:1,endswith:1,join:1};
+function meth(o,nm,a){if(Array.isArray(o)){if(nm==='append'){if(a.length!==1)throw Error('В append нужен ровно один элемент: b.append(x)');o.push(a[0]);return null}throw Error(`Я не знаю метод .${nm}() для массивов. Я знаю: append.`)}
+ if(typeof o!=='string')throw Error(`Метод .${nm}() вызывают у текста или массива, а тут что-то другое.`);
+ if(!M.hasOwnProperty(nm))throw Error(`Я не знаю метод .${nm}(). Я знаю: ${Object.keys(M).join(', ')}.`);
+ if(nm!=='join'&&a.some(z=>typeof z!=='string'))throw Error('В скобках метода нужен текст — в кавычках.');
+ if(nm!=='split'&&a.length!==(NA[nm]||0))throw Error(`Проверь, что лежит в скобках метода .${nm}().`);return M[nm](o,...a)}
+function idx(x,a,b,c,sl){if(typeof x!=='string'&&!Array.isArray(x))throw Error('Номера и срезы работают только с текстом и списками.');const n=x.length;
+ if(!sl){if(typeof a!=='number')throw Error('Номер символа должен быть целым числом.');const k=a<0?a+n:a;if(k<0||k>=n)throw Error(`Символа с номером ${a} нет: в строке ${n} символов, номера идут от 0 до ${n-1}.`);return x[k]}
+ if((a!==undefined&&typeof a!=='number')||(b!==undefined&&typeof b!=='number')||(c!==undefined&&typeof c!=='number'))throw Error('В срезе нужны целые числа.');
+ const st=c===undefined?1:c;if(!st)throw Error('Шаг среза не может быть нулём.');
+ const f=(u,d)=>u===undefined?d:Math.min(Math.max(u<0?u+n:u,st>0?0:-1),st>0?n:n-1),r=[],e=f(b,st>0?n:-1);
+ for(let k=f(a,st>0?0:n-1);st>0?k<e:k>e;k+=st)r.push(x[k]);return typeof x==='string'?r.join(''):r}
+function expr(e,v,io){
+ const T=e.match(/f"(?:\\.|[^"\\])*"|f'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\d+\.\d+|\d+|[A-Za-zА-Яа-яЁё_][\wА-Яа-яЁё]*|\*\*|\/\/|==|!=|<=|>=|\S/g)||[];let i=0;
+ const nx=()=>T[i++],bad=()=>Error(`Не понимаю «${e.trim()}». Текст пишется в кавычках, числа — без них.`);
+ function atom(){const t=nx();let m;if(t===undefined)throw bad();
+  if(t==='('){const x=orx();if(nx()!==')')throw bad();return x}
+  if(t==='-'){const x=atom();if(typeof x==='string')throw Error('Минус не работает с текстом.');return isF(x)?new Fl(-x.n):-x}
+  if(t==='['){const r=[];if(T[i]===']'){i++;return r}for(;;){r.push(orx());if(T[i]===','){i++;continue}if(nx()!==']')throw bad();return r}}
+  if((m=t.match(/^f(["'])([\s\S]*)\1$/)))return dec(m[2]).replace(/\{([^{}]*)\}/g,(_,q)=>fmt(expr(q,v,io)));
+  if((m=t.match(/^(?:"([\s\S]*)"|'([\s\S]*)')$/)))return dec(m[1]??m[2]);
+  if(t==='True')return true;if(t==='False')return false;
+  if(/^\d+$/.test(t))return Number(t);
+  if(/^\d+\.\d+$/.test(t))return new Fl(Number(t));
+  if(/^[A-Za-zА-Яа-яЁё_]/.test(t)){
+   if(T[i]==='('){i++;
+    if(t==='input'){const p=T[i]===')'?'':fmt(add());if(nx()!==')')throw bad();const val=io.inp[io.k++]??'';io.out+=p+val+'\n';return val}
+    if(['int','float','type','round','abs','len','str'].includes(t)){const a=orx();let b;if(T[i]===','){i++;b=num(add())}if(nx()!==')')throw bad();return call(t,a,b)}
+    throw Error(`Я не знаю команды «${t}». Я знаю print, input, type, int, float, round, abs, len и str.`)}
+   if(t in v)return v[t];throw Error(`Я не знаю слова «${t}». Если это текст — возьми его в кавычки.`)}
+  throw bad()}
+ function post(x){for(;;){
+ if(T[i]==='['){i++;let a,b,c,sl=0;if(T[i]!==':')a=orx();if(T[i]===':'){sl=1;i++;if(T[i]!==':'&&T[i]!==']')b=orx();if(T[i]===':'){i++;if(T[i]!==']')c=orx()}}if(nx()!==']')throw bad();x=idx(x,a,b,c,sl)}
+ else if(T[i]==='.'&&/^[A-Za-z_]/.test(T[i+1]||'')&&T[i+2]==='('){const nm=T[i+1];i+=3;const ar=[];if(T[i]!==')')for(;;){ar.push(orx());if(T[i]===','){i++;continue}break}if(nx()!==')')throw bad();x=meth(x,nm,ar)}
+ else return x}}
+ function pw(){let a=post(atom());if(T[i]==='**'){i++;a=bin('**',a,pw())}return a}
+ function mul(){let a=pw();while(T[i]==='*'||T[i]==='/'||T[i]==='//'||T[i]==='%'){const o=nx();a=bin(o,a,pw())}return a}
+ function add(){let a=mul();while(T[i]==='+'||T[i]==='-'){const o=nx();a=bin(o,a,mul())}return a}
+ function rel(o,a,b){const sa=typeof a==='string',sb=typeof b==='string';
+  if(sa!==sb){if(o==='==')return false;if(o==='!=')return true;throw Error('Текст и число нельзя сравнивать на больше-меньше. Может, забыл int() или float()?')}
+  const x=sa?a:num(a),y=sb?b:num(b);return o==='=='?x===y:o==='!='?x!==y:o==='<'?x<y:o==='>'?x>y:o==='<='?x<=y:x>=y}
+ function cmp(){const a=add();let o=T[i],ng=0;if(o==='not'&&T[i+1]==='in'){ng=1;i++;o='in'}if(o==='in'){i++;const b=add();if(!(typeof b==='string'?typeof a==='string':Array.isArray(b)))throw Error('«in» ищет текст внутри текста.');const r=b.includes(a);return ng?!r:r}if(['==','!=','<','>','<=','>='].includes(o)){i++;return rel(o,a,add())}return a}
+ function nt(){if(T[i]==='not'){i++;return !truthy(nt())}return cmp()}
+ function an(){let a=nt();while(T[i]==='and'){i++;const b=nt();a=truthy(a)&&truthy(b)}return a}
+ function orx(){let a=an();while(T[i]==='or'){i++;const b=an();a=truthy(a)||truthy(b)}return a}
+ const r=orx();if(T[i]==='=')throw Error('Один знак = кладёт значение в коробочку. Для сравнения нужно два знака: ==');if(i<T.length)throw bad();return r}
+function run(code,inputs){
+ code=code.replace(/[“”„«»]/g,'"').replace(/[‘’]/g,"'");
+ const v={},io={out:'',k:0,inp:inputs};
+ const L=code.split('\n').map((raw,n)=>({n:n+1,ind:raw.match(/^ */)[0].length,t:raw.trim()})).filter(x=>x.t&&x.t[0]!=='#');let p=0;
+ function stmt(l){const n=l.n,t=l.t;let m;const at=x=>Error(`Строка ${n}: ${x}`);
+  try{
+   if((m=t.match(/^print\((.*)\)$/))){
+    let sep=' ',end='\n';const args=[];
+    if(m[1].trim()!==''){for(const a of splitTop(m[1],',')){let kw=a.match(/^\s*(sep|end)\s*=(.*)$/);
+      if(kw){const val=fmt(expr(kw[2],v,io)).replace(/\\n/g,'\n');kw[1]==='sep'?sep=val:end=val}
+      else args.push(fmt(expr(a,v,io)))}}
+    io.out+=args.join(sep)+end;
+   }else if((m=t.match(/^([A-Za-zА-Яа-я_]\w*)\s*(\*\*|\/\/|[-+*\/%])=\s*(.+)$/))){if(!(m[1] in v))throw Error(`Я не знаю слова «${m[1]}». Сначала положи в неё значение.`);v[m[1]]=bin(m[2],v[m[1]],expr(m[3],v,io))}
+   else if((m=t.match(/^([A-Za-zА-Яа-я_]\w*)\s*=\s*(.+)$/))){v[m[1]]=expr(m[2],v,io)}
+   else if(/^Print\(/i.test(t)&&!/^print\(/.test(t))throw Error('Пиши print маленькими буквами — Python различает большие и маленькие.');
+   else if((m=t.match(/^([A-Za-zА-Яа-я_]\w*)\s*\[(.+)\]\s*=\s*(.+)$/))){
+    if(!(m[1] in v))throw Error(`Я не знаю слова «${m[1]}». Сначала создай массив.`);
+    const ar=v[m[1]];if(typeof ar==='string')throw Error('Строку нельзя менять по частям: s[0] = ... не работает. Собери новую строку склейкой.');
+    if(!Array.isArray(ar))throw Error('По номеру можно менять только элементы массива.');
+    const kk=expr(m[2],v,io);if(typeof kk!=='number'||!Number.isInteger(kk))throw Error('Номер элемента должен быть целым числом.');
+    const nn=ar.length,jj=kk<0?kk+nn:kk;if(jj<0||jj>=nn)throw Error(`Элемента с номером ${kk} нет: в массиве ${nn} элементов, номера от 0 до ${nn-1}.`);ar[jj]=expr(m[3],v,io)}
+   else if((m=t.match(/^([A-Za-zА-Яа-я_]\w*)\.(\w+)\((.*)\)$/))){
+    if(!(m[1] in v))throw Error(`Я не знаю слова «${m[1]}». Сначала создай массив.`);
+    const args=m[3].trim()===''?[]:splitTop(m[3],',').map(x=>expr(x,v,io));meth(v[m[1]],m[2],args)}
+   else throw Error(`Не понимаю «${t}». Проверь скобки и кавычки.`);
+  }catch(e){throw e.message.startsWith('Строка')?e:at(e.message)}}
+ function skip(bi){while(p<L.length&&L[p].ind>=bi)p++}
+ function chain(ind){let taken=false,first=true;
+  while(p<L.length&&L[p].ind===ind){const l=L[p],k=l.t.match(/^(if|elif|else)\b/);
+   if(!k||(first?k[1]!=='if':k[1]==='if'))break;
+   const m=l.t.match(/^(if|elif|else)\b\s*(.*?)\s*:$/);
+   if(!m)throw Error(`Строка ${l.n}: в конце строки с ${k[1]} нужно двоеточие :`);
+   if(m[1]!=='else'&&!m[2])throw Error(`Строка ${l.n}: после ${m[1]} нужно условие.`);
+   let c=true;if(m[1]!=='else'&&!taken){try{c=truthy(expr(m[2],v,io))}catch(e){throw Error(`Строка ${l.n}: ${e.message}`)}}
+   p++;if(!(p<L.length&&L[p].ind>ind))throw Error(`Строка ${l.n}: после двоеточия нужна строка с отступом — 4 пробела слева.`);
+   const bi=L[p].ind;if(!taken&&c){taken=true;block(bi)}else skip(bi);first=false}}
+ let ticks=0;
+ function loop(ind){const l=L[p],w=l.t.match(/^while\b\s*(.*?)\s*:$/),f=l.t.match(/^for\s+([A-Za-zА-Яа-я_]\w*)\s+in\s+range\((.*)\)\s*:$/),g=l.t.match(/^for\s+([A-Za-zА-Яа-я_]\w*)\s+in\s+(.+?)\s*:$/);
+  const E=x=>Error(`Строка ${l.n}: ${x}`);
+  if(!w&&!g)throw E(/^while/.test(l.t)?'в конце строки с while нужно двоеточие :':'цикл пиши так: for i in range(5):');
+  if(w&&!w[1])throw E('после while нужно условие.');
+  const s0=p+1;if(!(s0<L.length&&L[s0].ind>ind))throw E('после двоеточия нужна строка с отступом — 4 пробела слева.');
+  const bi=L[s0].ind;let e=s0;while(e<L.length&&L[e].ind>=bi)e++;
+  const body=()=>{if(++ticks>5000)throw E('цикл никак не заканчивается! Проверь, меняется ли что-то внутри цикла.');p=s0;
+   try{block(bi)}catch(x){if(x&&x.sig==='break')return 1;if(!(x&&x.sig==='continue'))throw x}return 0};
+  const cond=()=>{try{return truthy(expr(w[1],v,io))}catch(x){throw E(x.message)}};
+  if(w){while(cond()){if(body())break}}
+  else if(!f){let it;try{it=expr(g[2],v,io)}catch(x){throw E(x.message)}if(typeof it!=='string'&&!Array.isArray(it))throw E('после in нужен текст (или range).');for(const ch of it){v[g[1]]=ch;if(body())break}}else{let a;try{a=splitTop(f[2],',').map(q=>{const r=num(expr(q,v,io));if(!Number.isInteger(r))throw Error('в range нужны целые числа.');return r})}catch(x){throw E(x.message)}
+   let st=0,en=a[0],sp=1;if(a.length>1){st=a[0];en=a[1]}if(a.length>2)sp=a[2];if(a.length>3||!sp)throw E('в range нужно от одного до трёх чисел, а шаг — не ноль.');
+   for(let k=st;sp>0?k<en:k>en;k+=sp){v[f[1]]=k;if(body())break}}
+  p=e}
+ function block(ind){while(p<L.length&&L[p].ind>=ind){const l=L[p];
+   if(l.ind>ind)throw Error(`Строка ${l.n}: лишний отступ — здесь пробелы слева не нужны.`);
+   if(/^if\b/.test(l.t)){chain(ind);continue}
+   if(/^(while|for)\b/.test(l.t)){loop(ind);continue}
+   if(l.t==='break'||l.t==='continue'){p++;throw {sig:l.t}}
+   if(/^(elif|else)\b/.test(l.t))throw Error(`Строка ${l.n}: ${l.t.split(/\W/)[0]} без if выше. Сначала нужен if.`);
+   p++;stmt(l)}}
+ try{block(L.length?L[0].ind:0)}catch(x){if(x&&x.sig)throw Error(`Строка ${(L.find(z=>z.t===x.sig)||{n:1}).n}: ${x.sig} работает только внутри цикла.`);throw x}return io.out}
+
+/* ---------- урок ---------- */
+/* мягкое сравнение ответов: регистр, лишние пробелы, знаки препинания и ё/е не важны */
+const Q=s=>String(s).toLowerCase().replace(/ё/g,'е').replace(/(\d)\.(\d)/g,'$1\u0001$2').replace(/[.,;:!?"'`«»“”„‘’()\[\]{}<>…—–_]/g,' ').replace(/\u0001/g,'.').replace(/[ \t\r\f\v\u00a0]+/g,' ').split('\n').map(l=>l.trim()).filter(Boolean).join('\n');
+const eq=(a,b)=>{const x=Q(a),y=Q(b);if(x===''||y==='')return String(a).trim()===String(b).trim();return x===y};
+const NAME_OK=(a,b)=>a.includes('Аня')&&!a.includes('Макс')&&b.includes('Макс')&&!b.includes('Аня');
+const last=o=>o.trim().split('\n').pop(),NOIN='Без команды input я не смогу тебя послушать!';
+const CK=(cs,re,m)=>(c,r)=>{if(cs[0][0].length&&!/input\(/.test(c))return NOIN;if(re&&!re.test(c))return m;return cs.every(([i,o])=>(i.length?last(r(i)):r(i).trim())===o)?null:m};
+const KEYS={1:['[]','[0]','[-1]','[:]','print()','input()','len()','.split()','for x in ','    ','='],2:['[]','total = 0','result = 1','+=','*=','for x in ','for i in ','range()','len()','int()','%','    '],
+3:['[]','for x in ','for i in ','range()','len()','if ','break','in ','==','>','+=','    '],
+4:['[]','best = a[0]','for x in ','for i in ','range()','len()','if ','>','<','print()','    '],
+5:['[]','b = []','a[i] = ','for i in ','range()','len()','if ','%','append()','print()','    ']};
+const L1=[
+{say:`Одинокие переменные — это кармашки: в каждый помещается одно значение. А массив — целый ряд коробочек с одним именем! Массив записывается в квадратных скобках, значения перечисляются через запятую: [3, 1, 4]. У каждой коробочки есть номер — индекс, и считаем мы, как всегда, с нуля!`,code:`a = [3, 1, 4]\nprint(a)\nprint(a[0])\nprint(a[2])\nprint(len(a))`,
+ notes:[['[3, 1, 4]','массив из трёх чисел'],['a[0]','первая коробочка: 3'],['len(a)','сколько элементов: 3']]},
+{say:`Индекс может быть отрицательным: a[-1] — последний элемент. Срез a[1:3] достаёт кусок массива. А ещё массивы можно склеивать плюсом и повторять звёздочкой — совсем как строки!`,code:`a = [1, 2, 3, 4]\nprint(a[0], a[-1])\nprint(a[1:3])\nprint(a + [5, 6])\nprint([0] * 3)`,
+ notes:[['a[-1]','последний элемент'],['a[1:3]','элементы с номерами 1 и 2'],['a + [5, 6]','склейка: [1, 2, 3, 4, 5, 6]'],['[0] * 3','повтор: [0, 0, 0]']]},
+{task:'Создай массив и выведи его',say:`Заведи массив nums с числами 5, 2, 9 (через запятую, в квадратных скобках) и выведи весь массив одним print.`,ph:'nums = [...]\nprint(nums)',
+ hint:`nums = [5, 2, 9], затем print(nums).`,sol:`nums = [5, 2, 9]\nprint(nums)`,
+ check:(c,r)=>eq(r([]).trim(),'[5, 2, 9]')&&/\[.*,.*\]/.test(c)?null:'Нужен массив [5, 2, 9] и один print.'},
+{task:'Первый и последний элемент',say:`Дан массив nums = [7, 3, 9, 1]. Выведи его первый и последний элемент через пробел.`,ph:'nums = [7, 3, 9, 1]\nprint(...)',
+ hint:`print(nums[0], nums[-1])`,sol:`nums = [7, 3, 9, 1]\nprint(nums[0], nums[-1])`,
+ check:(c,r)=>eq(r([]).trim(),'7 1')&&/nums\[\s*0\s*\]/.test(c)&&/nums\[\s*-\s*1\s*\]/.test(c)?null:'Нужны nums[0] и nums[-1] в одном print.'},
+{task:'Сколько элементов',say:`Дан массив [4, 8, 15, 16, 23, 42]. Выведи, сколько в нём элементов. Только число!`,ph:'a = [...]\nprint(len(...))',
+ hint:`print(len(a)) — len считает элементы массива.`,sol:`a = [4, 8, 15, 16, 23, 42]\nprint(len(a))`,
+ check:(c,r)=>eq(r([]).trim(),'6')&&/len\(/.test(c)?null:'Нужно число элементов — его считает len().'},
+{say:`Как ввести целый массив сразу? Пусть человек пишет слова через пробел, а split() разрежет строку на части и соберёт из них массив! А вывести элементы по одному в строке поможет цикл for: x по очереди станет каждым элементом.`,
+ code:`a = input().split()\nprint(a)\nfor x in a:\n    print(x)`,inp:['раз два три'],
+ notes:[['input().split()','ждём строку и режем её на массив слов'],['for x in a:','x — каждый элемент по очереди'],['    print(x)','выводим элемент с новой строки']]},
+{task:'Сколько слов',say:`Спроси предложение (слова через пробел) и выведи, сколько в нём слов. Режь split, считай len.`,ph:'a = input(...).split()\nprint(len(a))',inp:['мама мыла раму'],
+ hint:`a = input().split(), потом print(len(a)).`,sol:`a = input().split()\nprint(len(a))`,
+ check:CK([[['мама мыла раму'],'3'],[['один'],'1'],[['а б в г'],'4']],/split\(/,'Нужно число слов: разрежь split() и посчитай len.')},
+{task:'Слова по строкам',say:`Спроси три слова через пробел и выведи каждое слово с новой строки. Используй цикл for по массиву!`,ph:'a = input(...).split()\nfor x in a:\n    ...',inp:['раз два три'],
+ hint:`for x in a: — и внутри print(x).`,sol:`a = input().split()\nfor x in a:\n    print(x)`,
+ check:CK([[['раз два три'],'раз\nдва\nтри'],[['а б'],'а\nб']],/\bfor\b/,'Нужен цикл for по элементам массива.')},
+{end:1}];
+const L2=[
+{say:`Главное, зачем нужны массивы, — обрабатывать много данных одной программой. Например, посчитать сумму чисел. Идея: заводим коробочку total с нулём до цикла, а внутри цикла добавляем каждый элемент. Выводим сумму уже после цикла!`,code:`a = [3, 1, 4, 1, 5]\ntotal = 0\nfor x in a:\n    total += x\nprint(total)`,
+ notes:[['total = 0','сюда копим сумму'],['total += x','добавляем текущий элемент'],['print(total)','после цикла — сумма готова']]},
+{task:'Сумма элементов',say:`Дан массив [10, 20, 30, 40]. Посчитай сумму его элементов циклом и выведи её.`,ph:'a = [10, 20, 30, 40]\ntotal = 0\nfor x in a:\n    ...',
+ hint:`total += x внутри цикла, а print(total) — после.`,sol:`a = [10, 20, 30, 40]\ntotal = 0\nfor x in a:\n    total += x\nprint(total)`,
+ check:(c,r)=>eq(r([]).trim(),'100')&&/\bfor\b/.test(c)&&/\+=/.test(c)?null:'Нужен цикл for и коробочка total с += внутри.'},
+{task:'Произведение элементов',say:`Теперь произведение! Дан массив [2, 3, 4]. Перемножь все элементы и выведи результат. Внимание: коробочку для произведения заводи с единицы, а не с нуля!`,ph:'a = [2, 3, 4]\nresult = 1\nfor x in a:\n    ...',
+ hint:`result *= x внутри цикла.`,sol:`a = [2, 3, 4]\nresult = 1\nfor x in a:\n    result *= x\nprint(result)`,
+ check:(c,r)=>eq(r([]).trim(),'24')&&/\bfor\b/.test(c)&&/\*=/.test(c)?null:'Нужен цикл и result = 1 с *= внутри.'},
+{say:`Среднее арифметическое — сумма, делённая на количество. А что если числа вводит человек? split() даёт текст, поэтому каждый элемент переводим в число через int() — прямо в массиве, по номеру!`,
+ code:`a = input().split()\nfor i in range(len(a)):\n    a[i] = int(a[i])\ntotal = 0\nfor x in a:\n    total += x\nprint(total / len(a))`,inp:['2 4 6'],
+ notes:[['a[i] = int(a[i])','переводим каждый элемент в число'],['len(a)','сколько чисел ввели'],['total / len(a)','сумма, делённая на количество']]},
+{task:'Среднее арифметическое',say:`Дан массив оценок [4, 5, 3, 5, 4]. Посчитай среднее и выведи его. Ответ будет дробным — так и должно быть!`,ph:'a = [4, 5, 3, 5, 4]\ntotal = 0\nfor x in a:\n    ...',
+ hint:`После цикла: print(total / len(a)).`,sol:`a = [4, 5, 3, 5, 4]\ntotal = 0\nfor x in a:\n    total += x\nprint(total / len(a))`,
+ check:(c,r)=>eq(r([]).trim(),'4.2')&&/\//.test(c)&&/\bfor\b/.test(c)?null:'Нужны сумма в цикле и деление на len(a) после него.'},
+{task:'Сумма введённых чисел',say:`Спроси числа через пробел (например: 1 2 3). Собери их в массив, переведи каждый элемент в число через int, как в уроке, и выведи их сумму.`,ph:'a = input(...).split()\nfor i in range(len(a)):\n    a[i] = int(a[i])',inp:['5 10 2'],
+ hint:`Сначала цикл с a[i] = int(a[i]), потом цикл суммы.`,sol:`a = input().split()\nfor i in range(len(a)):\n    a[i] = int(a[i])\ntotal = 0\nfor x in a:\n    total += x\nprint(total)`,
+ check:CK([[['5 10 2'],'17'],[['1 1'],'2']],/int\(/,'Нужен int() для каждого элемента и цикл для суммы.')},
+{task:'Два массива: сумма всех',say:`Даны два массива: a = [1, 2, 3] и b = [4, 5, 6]. Посчитай сумму ВСЕХ элементов обоих массивов и выведи её. Два цикла подряд — и готово!`,ph:'a = [1, 2, 3]\nb = [4, 5, 6]\ntotal = 0\n...',
+ hint:`Один цикл for x in a, второй for x in b — оба добавляют в total.`,sol:`a = [1, 2, 3]\nb = [4, 5, 6]\ntotal = 0\nfor x in a:\n    total += x\nfor x in b:\n    total += x\nprint(total)`,
+ check:(c,r)=>eq(r([]).trim(),'21')&&(c.match(/\bfor\b/g)||[]).length>=2?null:'Нужны два цикла: по массиву a и по массиву b.'},
+{task:'Сумма чётных элементов',say:`Дан массив [1, 2, 3, 4, 5, 6]. Сложи только чётные элементы и выведи сумму. Чётность проверяй остатком от деления на 2.`,ph:'a = [1, 2, 3, 4, 5, 6]\ntotal = 0\nfor x in a:\n    if ...',
+ hint:`if x % 2 == 0: total += x`,sol:`a = [1, 2, 3, 4, 5, 6]\ntotal = 0\nfor x in a:\n    if x % 2 == 0:\n        total += x\nprint(total)`,
+ check:(c,r)=>eq(r([]).trim(),'12')&&/\bif\b/.test(c)&&/%/.test(c)?null:'Нужен цикл, условие x % 2 == 0 и сумма внутри if.'},
+{end:1}];
+const L3=[
+{say:`Как узнать, есть ли число 7 в массиве? Заглядываем в каждую коробочку по очереди — это и есть линейный поиск. Как только нашли — можно сразу выйти из цикла командой break.`,code:`a = [3, 7, 1, 9]\nfor x in a:\n    if x == 7:\n        print("Нашёл!")\n        break`,
+ notes:[['if x == 7','проверяем каждый элемент'],['break','нашли — выходим из цикла сразу']]},
+{task:'Есть ли слово «кот»',say:`Спроси слова через пробел и выведи Да, если среди них есть кот, иначе выведи Нет. Проверять наличие удобно словом in!`,ph:'a = input(...).split()\nif ... in a:\n    ...',inp:['пёс кот попугай'],
+ hint:`if "кот" in a: — потом print("Да"), а в else — print("Нет").`,sol:`a = input().split()\nif "кот" in a:\n    print("Да")\nelse:\n    print("Нет")`,
+ check:CK([[['пёс кот попугай'],'Да'],[['дом лес'],'Нет']],/\bin\b/,'Проверяй наличие слова через in.')},
+{say:`А если подходящих элементов несколько? Тогда break не нужен: пройдём весь массив до конца и выведем каждый элемент, который подходит под условие.`,code:`a = [12, 7, 25, 4, 30]\nfor x in a:\n    if x > 10:\n        print(x)`,
+ notes:[['без break','выводим всех, кто подходит'],['if x > 10','условие поиска']]},
+{task:'Элементы больше 10',say:`Дан массив [5, 11, 8, 20, 13]. Выведи каждый элемент, который больше 10, каждый с новой строки.`,ph:'a = [5, 11, 8, 20, 13]\nfor x in a:\n    if ...',
+ hint:`if x > 10: print(x) — каждый подходящий в своей строке.`,sol:`a = [5, 11, 8, 20, 13]\nfor x in a:\n    if x > 10:\n        print(x)`,
+ check:(c,r)=>eq(r([]).trim(),'11\n20\n13')&&/\bfor\b/.test(c)?null:'Должно быть три строки: 11, 20, 13.'},
+{task:'Чётные из введённых чисел',say:`Спроси числа через пробел (например: 1 2 3 4). Переведи их в числа через int, как учили, и выведи только чётные, каждое с новой строки.`,ph:'a = input(...).split()\nfor i in range(len(a)):\n    a[i] = int(a[i])',inp:['1 2 3 4'],
+ hint:`Сначала перевод в числа, потом цикл с if x % 2 == 0: print(x).`,sol:`a = input().split()\nfor i in range(len(a)):\n    a[i] = int(a[i])\nfor x in a:\n    if x % 2 == 0:\n        print(x)`,
+ check:CK([[['1 2 3 4'],'2\n4'],[['7 9'],'']],/int\(/,'Нужен перевод в числа через int и цикл с условием чётности.')},
+{task:'Сколько пятёрок?',say:`Дан массив [5, 2, 5, 5, 1]. Посчитай, сколько раз в нём встречается число 5, и выведи результат. Поможет счётчик и условие внутри цикла.`,ph:'a = [5, 2, 5, 5, 1]\nn = 0\nfor x in a:\n    if ...',
+ hint:`if x == 5: n += 1, а в конце print(n).`,sol:`a = [5, 2, 5, 5, 1]\nn = 0\nfor x in a:\n    if x == 5:\n        n += 1\nprint(n)`,
+ check:(c,r)=>eq(r([]).trim(),'3')&&/==\s*5/.test(c)&&/\+=/.test(c)?null:'Нужен счётчик n и условие x == 5 в цикле.'},
+{task:'Номер элемента',say:`Дан массив [4, 8, 15, 16, 23, 42]. Найди индекс элемента 15 и выведи его. Иди по массиву по номерам: for i in range(len(a)), внутри if a[i] == 15: print(i) и break.`,ph:'a = [4, 8, 15, 16, 23, 42]\nfor i in range(len(a)):\n    if ...',
+ hint:`if a[i] == 15: print(i), потом break.`,sol:`a = [4, 8, 15, 16, 23, 42]\nfor i in range(len(a)):\n    if a[i] == 15:\n        print(i)\n        break`,
+ check:(c,r)=>eq(r([]).trim(),'2')&&/range\(len\(/.test(c)?null:'Нужен цикл по номерам и вывод индекса i.'},
+{end:1}];
+const L4=[
+{say:`Как найти самое большое число в массиве? Запомним первый элемент как «рекорд» в коробочку best, а потом сравним с каждым: кто больше рекорда — становится новым рекордом!`,code:`a = [3, 9, 4, 7]\nbest = a[0]\nfor x in a:\n    if x > best:\n        best = x\nprint(best)`,
+ notes:[['best = a[0]','пока первый элемент — самый большой'],['if x > best','нашли больше — обновили рекорд']]},
+{task:'Максимальный элемент',say:`Дан массив [12, 7, 25, 4, 30]. Найди максимальный элемент и выведи его. Число сам не пиши — пусть цикл найдёт!`,ph:'a = [12, 7, 25, 4, 30]\nbest = ...\nfor x in a:\n    if ...',
+ hint:`best = a[0], потом if x > best: best = x.`,sol:`a = [12, 7, 25, 4, 30]\nbest = a[0]\nfor x in a:\n    if x > best:\n        best = x\nprint(best)`,
+ check:(c,r)=>eq(r([]).trim(),'30')&&/\bfor\b/.test(c)&&/>/.test(c)?null:'Нужен цикл и сравнение x > best.'},
+{task:'Минимальный элемент',say:`Теперь наоборот: найди минимальный элемент массива [12, 7, 25, 4, 30]. Знак сравнения смотрит в другую сторону!`,ph:'a = [12, 7, 25, 4, 30]\nbest = ...\nfor x in a:\n    if ...',
+ hint:`best = a[0], потом if x < best: best = x.`,sol:`a = [12, 7, 25, 4, 30]\nbest = a[0]\nfor x in a:\n    if x < best:\n        best = x\nprint(best)`,
+ check:(c,r)=>eq(r([]).trim(),'4')&&/</.test(c)?null:'Нужен цикл и сравнение x < best.'},
+{say:`Часто нужен не сам элемент, а его номер. Тогда в best кладём индекс рекордсмена, а сравниваем a[i] с a[best]!`,code:`a = [3, 9, 4, 9]\nbest = 0\nfor i in range(len(a)):\n    if a[i] > a[best]:\n        best = i\nprint(best)`,
+ notes:[['best = 0','номер пока лучшего'],['a[i] > a[best]','сравниваем с рекордсменом']]},
+{task:'Номер максимального',say:`Дан массив [12, 7, 25, 4, 30]. Выведи индекс максимального элемента. Если максимумов несколько — подойдёт любой номер!`,ph:'a = [12, 7, 25, 4, 30]\nbest = 0\nfor i in range(len(a)):\n    if ...',
+ hint:`if a[i] > a[best]: best = i, в конце print(best).`,sol:`a = [12, 7, 25, 4, 30]\nbest = 0\nfor i in range(len(a)):\n    if a[i] > a[best]:\n        best = i\nprint(best)`,
+ check:(c,r)=>eq(r([]).trim(),'4')&&/range\(len\(/.test(c)?null:'Нужен цикл по номерам и вывод best.'},
+{task:'Размах значений',say:`Дан массив температур [8, 12, 5, 15, 10]. Выведи разность между максимальной и минимальной температурой. Один цикл может искать и максимум, и минимум!`,ph:'a = [8, 12, 5, 15, 10]\nbig = a[0]\nsmall = a[0]\nfor x in a:\n    ...',
+ hint:`if x > big: big = x и if x < small: small = x, в конце print(big - small).`,sol:`a = [8, 12, 5, 15, 10]\nbig = a[0]\nsmall = a[0]\nfor x in a:\n    if x > big:\n        big = x\n    if x < small:\n        small = x\nprint(big - small)`,
+ check:(c,r)=>eq(r([]).trim(),'10')&&/\bfor\b/.test(c)?null:'Нужен цикл, который ищет и максимум, и минимум.'},
+{end:1}];
+const L5=[
+{say:`Массив — не музей: его элементы можно менять! Строку по частям изменить нельзя, а элемент массива — запросто: a[0] = 99. Умножим каждый элемент на 2!`,code:`a = [1, 2, 3]\na[0] = 99\nfor i in range(len(a)):\n    a[i] = a[i] * 2\nprint(a)`,
+ notes:[['a[0] = 99','меняем один элемент по номеру'],['a[i] = a[i] * 2','удваиваем каждый элемент']]},
+{task:'Удвой каждый элемент',say:`Дан массив [1, 2, 3, 4]. Удвой каждый его элемент — не создавая новый массив, а меняя элементы по номерам. Выведи массив одним print. Должно получиться [2, 4, 6, 8].`,ph:'a = [1, 2, 3, 4]\nfor i in range(len(a)):\n    a[i] = ...',
+ hint:`a[i] = a[i] * 2 внутри цикла.`,sol:`a = [1, 2, 3, 4]\nfor i in range(len(a)):\n    a[i] = a[i] * 2\nprint(a)`,
+ check:(c,r)=>eq(r([]).trim(),'[2, 4, 6, 8]')&&/\[\s*i\s*\]\s*=/.test(c)?null:'Нужен цикл по номерам и a[i] = a[i] * 2.'},
+{task:'Обнули отрицательные',say:`Дан массив [3, -1, 5, -7, 2]. Замени все отрицательные элементы нулём и выведи массив. Должно получиться [3, 0, 5, 0, 2].`,ph:'a = [3, -1, 5, -7, 2]\nfor i in range(len(a)):\n    if ...',
+ hint:`if a[i] < 0: a[i] = 0`,sol:`a = [3, -1, 5, -7, 2]\nfor i in range(len(a)):\n    if a[i] < 0:\n        a[i] = 0\nprint(a)`,
+ check:(c,r)=>eq(r([]).trim(),'[3, 0, 5, 0, 2]')&&/\bif\b/.test(c)?null:'Нужен цикл по номерам и условие a[i] < 0.'},
+{say:`Иногда старый массив менять нельзя — нужен новый, куда отбираем элементы. Создаём пустой массив и добавляем в него элементы по одному командой append!`,code:`a = [1, 2, 3, 4, 5, 6]\nb = []\nfor x in a:\n    if x % 2 == 0:\n        b.append(x)\nprint(b)`,
+ notes:[['b = []','пустой массив для отобранного'],['b.append(x)','добавляем элемент в конец']]},
+{task:'Новый массив из чётных',say:`Дан массив [1, 2, 3, 4, 5, 6]. Собери новый массив из чётных элементов и выведи его. Должно получиться [2, 4, 6].`,ph:'a = [1, 2, 3, 4, 5, 6]\nb = []\nfor x in a:\n    if ...',
+ hint:`if x % 2 == 0: b.append(x)`,sol:`a = [1, 2, 3, 4, 5, 6]\nb = []\nfor x in a:\n    if x % 2 == 0:\n        b.append(x)\nprint(b)`,
+ check:(c,r)=>eq(r([]).trim(),'[2, 4, 6]')&&/append\(/.test(c)?null:'Нужен пустой массив, цикл с условием и append.'},
+{task:'Увеличь нечётные на 1',say:`Дан массив [1, 2, 3, 4]. К нечётным элементам прибавь 1 (станут чётными!), чётные не трогай. Выведи массив. Должно получиться [2, 2, 4, 4].`,ph:'a = [1, 2, 3, 4]\nfor i in range(len(a)):\n    if ...',
+ hint:`if a[i] % 2 == 1: a[i] = a[i] + 1`,sol:`a = [1, 2, 3, 4]\nfor i in range(len(a)):\n    if a[i] % 2 == 1:\n        a[i] = a[i] + 1\nprint(a)`,
+ check:(c,r)=>eq(r([]).trim(),'[2, 2, 4, 4]')&&/\[\s*i\s*\]\s*=/.test(c)?null:'Нужен цикл по номерам и условие на нечётность.'},
+{task:'Только длинные слова',say:`Спроси слова через пробел и выведи новый массив: только слова длиной больше 3 букв. Например: кот дом попугай → ['попугай'].`,ph:'a = input(...).split()\nb = []\nfor x in a:\n    if len(x) > 3:\n        ...',inp:['кот дом попугай'],
+ hint:`b.append(x) внутри if, а в конце print(b).`,sol:`a = input().split()\nb = []\nfor x in a:\n    if len(x) > 3:\n        b.append(x)\nprint(b)`,
+ check:CK([[['кот дом попугай'],"['попугай']"],[['а б колобок'],"['колобок']"]],/append\(/,'Собирай новый массив через append и условие len(x) > 3.')},
+{end:1}];
+let STEPS=L1,LV=1;
+const OK=['Ура! Всё верно!','Отлично! Ты настоящий программист!','Бип-бип! Сработало!','Супер! Мои шестерёнки радуются!','Ого, как красиво! Так держать!','Ты меня удивил! Всё правильно!','Вот это код! Мои лампочки мигают от радости!','Точно в цель! Бип-бип-ура!'];
+const CALM=['Фух… Получилось! Пар вышел, я снова добрый.','Вот теперь правильно! Я уже не злюсь. Почти.','Ура! Я остыл. Ты молодец, что не сдался!','Наконец-то! Антенна перестала искрить. Спасибо!','Вот это упорство! Я снова спокоен и даже доволен.'];
+const BAD=[['Хм… Не совсем так. Давай ещё раз!','Ой, тут что-то не так. Проверь и попробуй снова!','Почти, но не то. Загляни в пример ещё разок!','Бип? Я такого не понимаю. Попробуй по-другому!'],
+['Бззз! Опять не то! Читай внимательнее!','Эй! Так не работает! Я начинаю хмуриться!','Снова мимо! Мои брови уже ползут вниз!','Не-а! Проверь каждую букву и каждый знак!'],
+['Я СЕРЬЁЗНО сержусь! Из ушей идёт пар! Повтори!','Пш-ш-ш! Я закипаю! Посмотри на пример ещё раз!','Бззт! Я уже горячий! Соберись и перечитай задание!','Фыр-р-р! Пар из ушей! Давай аккуратнее!'],
+['БЗЗЗТ! Я В ЯРОСТИ! Мои шестерёнки скрипят! Но я верю в тебя — читай внимательно и пробуй ещё!','ААА! Красные глаза, искры из антенны! Выдохни, прочитай подсказку и повтори!','ВЖЖЖ! Я СЕЙЧАС ВЗОРВУСЬ! Но ты справишься — вдохни и посмотри подсказку!','БАМ-БАМ-БАМ! Я кипящий чайник! Спокойно, прочитай ещё раз и не сдавайся!']];
+const LAB=['Бип спокоен','Бип хмурится','Бип сердится','Бип кипит от злости','Бип в ярости!'];
+const bags=new Map(),prev=new Map();
+function pick(a){let b=bags.get(a)||[];if(!b.length){b=[...a].sort(()=>Math.random()-.5);if(b.length>1&&b[b.length-1]===prev.get(a))b.unshift(b.pop())}const x=b.pop();prev.set(a,x);bags.set(a,b);return x}
+function meter(f){$('#mfill').style.width=Math.min(f,5)*20+'%';$('#mlab').textContent=LAB[Math.min(f,4)]}
+let step=0,fails=0,total=0,log=[],typer=null,passed=[],lastTry='';
+const SAVED={};
+function saveState(){SAVED[LV]={step,total,log:[...log],passed:[...passed]}}
+const D={},P={};try{Object.keys(localStorage).filter(k=>/^arr\d/.test(k)).forEach(k=>localStorage.removeItem(k))}catch(e){}
+
+const CATS=[['Что такое массив','Список значений, индексы, ввод-вывод','🗂️',1],['Считаем с массивом','Суммы, произведения, среднее','➕',2],['Поиск в массиве','Линейный поиск: один и все','🔍',3],['Максимум и минимум','Самый большой и самый маленький','🏅',4],['Преобразование массива','Меняем и отбираем элементы','🛠️',5]];
+function drawCats(){$('#cats').innerHTML=CATS.map((c,i)=>`<li><button class="cat ${c[3]?'open':'locked'}" data-i="${i}" data-lv="${c[3]}" ${c[3]?'':'aria-disabled="true"'}>
+ <span class="ic">${c[2]}</span><span><b>${i+1}. ${c[0]}</b><small>${c[3]?c[1]:'Скоро откроется'}</small>${c[3]&&P[c[3]]?`<small class="pr">${P[c[3]].t}</small><i class="bar"><b style="width:${P[c[3]].pct}%"></b></i>`:''}</span>
+ <span class="st">${c[3]?(P[c[3]]&&P[c[3]].pct===100?'⭐':'▶'):'🔒'}</span></button></li>`).join('')}
+drawCats();
+$('#cats').onclick=e=>{const b=e.target.closest('.cat.open');if(b)start(+b.dataset.lv)};
+function record(){const n=STEPS.length-1,pct=Math.min(100,Math.round(step/n*100));if(!pct)return;
+ const done=STEPS.slice(0,Math.min(step,n)).map((t,i)=>t.task?(log[i]||0):null).filter(x=>x!==null),clean=done.filter(x=>!x).length,err=done.reduce((a,b)=>a+b,0);
+ let q='ещё без заданий';if(done.length){const a=err/done.length;q=err===0?'🏆 Идеально':a<=.5?'🌟 Отлично':a<=1.5?'👍 Хорошо':a<=3?'🙂 Неплохо':'💪 Нужна тренировка';q+=`<br>С первого раза: ${clean} из ${done.length}`}
+ const old=P[LV];if(!old||pct>=old.pct)P[LV]={pct,t:`${pct}% · ${q}`}}
+function toMenu(){clearInterval(typer);record();saveState();$('#lesson').classList.add('hide');$('#menu').classList.remove('hide');drawCats()}
+$('#back').onclick=()=>{if(location.hash==="#lesson")history.back();else toMenu()};
+addEventListener("hashchange",()=>{
+ if(location.hash==="#lesson"){$('#menu').classList.add('hide');$('#lesson').classList.remove('hide')}
+ else if(!$('#lesson').classList.contains('hide'))toMenu()});
+function nav(){const p=$('#prev'),f=$('#fwd');p.disabled=step<=0;f.disabled=!(passed[step]&&step<STEPS.length-2)}
+$('#prev').onclick=()=>{if(step>0){step--;show()}};
+$('#fwd').onclick=()=>{if(passed[step]&&step<STEPS.length-2){step++;show()}};
+
+const GR=[[0,5,'0','Идеальный программист','Ни разу не разозлил меня! Мои шестерёнки поют!'],[2,4,'1–2','Отличный программист','Я почти не сердился. Очень чисто!'],[5,3,'3–5','Хороший программист','Иногда я хмурился, но ты быстро всё исправлял.'],[10,2,'6–10','Упорный ученик','Было жарковато, но ты не сдался — это главное!'],[17,1,'11–17','Начинающий программист','Я пару раз закипал. Зато теперь ты знаешь, где ошибаешься. Пройди ещё раз!'],[1e9,1,'18+','Терпеливый ученик','Я был в ярости, но ты дошёл до конца. Пройди ещё раз — станет легче!']];
+function finish(){const gi=GR.findIndex(x=>total<=x[0]),g=GR[gi];
+ let best=null;try{const b=localStorage.getItem('arr'+LV+'best');best=b===null?null:+b;if(best===null||total<best){best=total;localStorage.setItem('arr'+LV+'best',String(best))}localStorage.setItem('arr'+LV,'1')}catch(e){}
+ D[LV]=true;mood(total<=5?'happy':'idle');meter(0);say(g[4],'ok');
+ const chips=STEPS.map((t,i)=>t.task?(log[i]||0):null).filter(x=>x!==null).map((n,i)=>`<span>${i+1}: ${n?(n<3?'😠':'🤬'):'😊'} ${n}</span>`).join('');
+ $('#panel').innerHTML=`<div class="res"><div class="stars">${'⭐'.repeat(g[1])}${'☆'.repeat(5-g[1])}</div><h2>${g[3]}</h2>
+ <div class="lab">Счётчик злости Бипа</div>
+ <div class="big">Ошибок за уровень<b>${total}</b></div>
+ <div class="gauge"><i style="left:${Math.min(total,20)*5}%"></i></div>
+ <div class="gl"><span>Спокоен</span><span>В ярости</span></div>
+ <div class="lab">Ошибок в каждом задании</div><div class="chips">${chips}</div>
+ <div class="lab">Твой рекорд: ${best===null?total:best} ${best===total?'— это он!':''}</div>
+ <div class="lab">Как ставятся звёзды</div>
+ <div class="tbl">${GR.map((x,i)=>`<div class="${i===gi?'me':''}"><span>${x[2]}</span><span>${'⭐'.repeat(x[1])}</span><span>${x[3]}</span></div>`).join('')}</div>
+ <div class="row"><button class="btn" id="again">Пройти заново и разозлить Бипа меньше</button><button class="btn good" id="home">В меню</button></div></div>`;
+ $('#again').onclick=()=>{delete SAVED[LV];start(LV)};$('#home').onclick=()=>$('#back').click()}
+function mood(m,l){const r=$('#r1');r.className='robot';void r.offsetWidth;r.className='robot '+m+(l?' a'+l:'')}
+function say(t,kind){clearInterval(typer);const b=$('#bubble');b.className='bubble '+(kind||'');b.textContent='';let i=0;
+ const r=$('#r1');if(!r.classList.contains('happy')&&!r.classList.contains('angry'))r.classList.add('talk');
+ typer=setInterval(()=>{b.textContent=t.slice(0,++i);if(i>=t.length){clearInterval(typer);r.classList.remove('talk')}},16)}
+function start(lv){LV=lv||LV;STEPS=[0,L1,L2,L3,L4,L5][LV];const sv=SAVED[LV];step=sv?sv.step:0;total=sv?sv.total:0;log=sv?[...sv.log]:[];passed=sv?[...sv.passed]:STEPS.map(()=>false);if(location.hash!=="#lesson")location.hash="lesson";$('#menu').classList.add('hide');$('#lesson').classList.remove('hide');show()}
+function show(){const s=STEPS[step];fails=0;lastTry='';mood('idle');meter(0);
+ $('#dots').innerHTML=STEPS.slice(0,-1).map((_,i)=>`<i class="${i<step?'on':i===step?'now':''}"></i>`).join('');
+ nav();
+ const p=$('#panel');
+ if(s.end){finish();return}
+ if(!s.task){passed[step]=true;nav();say(s.say);let h='';
+  if(s.code){let o='';try{o=run(s.code,s.inp||[])}catch(e){}
+   h=`<div class="lab">Пример кода</div><div class="code"><pre>${esc(s.code)}</pre></div><div class="lab">Что получится</div><div class="out"><pre>${esc(o)}</pre></div>`}
+  if(s.notes)h+='<div class="lab">Разбираем по частям</div><ul class="notes">'+s.notes.map(n=>`<li><code>${esc(n[0])}</code> — ${esc(n[1])}</li>`).join('')+'</ul>';
+  p.innerHTML=h+'<div class="row"><button class="btn" id="next">Понятно, дальше</button></div>';$('#next').onclick=()=>{step++;show()};return}
+ say(s.say);
+ p.innerHTML=`<div class="task">📝 ${esc(s.task)}</div>
+ <div class="keys">${(KEYS[LV]).map(k=>`<button type="button" data-k="${esc(k)}">${esc(k.trim()?k:'⇥ отступ')}</button>`).join('')}</div>
+ <textarea id="ed" rows="4" placeholder="${esc(s.ph)}" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>
+ <div class="lab">Что получилось</div><div class="out" id="con"><pre> </pre></div>
+ <div class="row"><button class="btn" id="go">Запустить ▶</button></div>`;
+ const ed=$('#ed');
+ p.querySelector('.keys').onclick=e=>{const k=e.target.dataset.k;if(!k)return;const a=ed.selectionStart;
+  ed.setRangeText(k,a,ed.selectionEnd,'end');if(k.length>1&&/[)"]$/.test(k))ed.setSelectionRange(a+k.length-1,a+k.length-1);ed.focus()};
+ $('#go').onclick=()=>{if($('#go').dataset.ok){step++;show();return}
+  const code=ed.value,con=$('#con');
+  if(!code.trim()){say('Тут пусто! Напиши команду — иначе мне нечего проверять.','bad');return}
+  if(code===lastTry){say('Такой код ты уже запускал, и я уже сказал, в чём ошибка. Поменяй что-нибудь и попробуй снова!','bad');return}
+  lastTry=code;
+  try{const o=run(code,s.inp||[]);con.className='out';con.innerHTML=`<pre>${esc(o)||' '}</pre>`;
+   const bad=s.check(code,i=>run(code,i));
+   if(bad){fail(bad,s);return}
+   passed[step]=true;nav();mood('happy');meter(0);say(fails>=3?pick(CALM):pick(OK),'ok');
+   const g=$('#go');g.dataset.ok=1;g.textContent='Дальше';g.classList.add('good');ed.readOnly=true;
+  }catch(e){con.className='out err';con.innerHTML=`<pre>${esc(e.message)}</pre>`;fail(e.message,s)}};
+}
+function fail(msg,s){fails++;total++;log[step]=fails;const L=Math.min(fails,4);mood('angry',L);meter(fails);
+ let t=pick(BAD[L-1])+' '+msg;
+ if(fails>=2)t+='\nПодсказка: '+s.hint;
+ if(fails>=6)t+='\nВот ответ, перепиши его сам:\n'+s.sol;
+ say(t,'bad');
+ if(L<3)setTimeout(()=>{if($('#r1').classList.contains('angry'))mood('idle')},1600)}
+
+/* ---------- «На главную» с анимацией Бипа ---------- */
+const reduceMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
+$('#ovRobot').innerHTML=ROBOT;
+const ov=$('#ov'),ovName=$('#ovName'),ovFill=$('#ovFill'),ovStatus=$('#ovStatus');
+let launching=false;
+document.querySelectorAll("[data-home]").forEach(a=>{
+ a.addEventListener("click",e=>{
+  if(e.metaKey||e.ctrlKey||e.shiftKey||e.button!==0)return;
+  e.preventDefault();
+  if(launching)return;launching=true;
+  ov.classList.add("show");ov.setAttribute("aria-hidden","false");
+  ovName.textContent="Возвращаемся к выбору курса";
+  const stages=["Бип собирает вещи…","Заводит моторчик…","Едем домой!"];
+  let i=0;
+  (function next(){
+   if(i<stages.length){ovStatus.textContent=stages[i];ovFill.style.width=((i+1)/stages.length)*100+"%";i++;setTimeout(next,reduceMotion?60:Math.round(200/stages.length))}
+   else setTimeout(()=>{location.href=a.getAttribute("href")},reduceMotion?30:50);
+  })();
+ });
+});
+
+/* ---------- возврат кнопками браузера «Назад»/«Вперёд» (страница берётся из кэша) ---------- */
+addEventListener("pageshow",()=>{
+ launching=false;
+ ov.classList.remove("show");ov.setAttribute("aria-hidden","true");
+ ovFill.style.width="0";ovStatus.textContent="Бип подключается…";
+});
+
+/* ---------- светлая / тёмная тема ---------- */
+(function(){
+ const root=document.documentElement,btn=$('#themeBtn');
+ function apply(t){root.setAttribute("data-theme",t);const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==="dark"?"#151829":"#fff7e6"}
+ apply(root.getAttribute("data-theme")||"light");
+ btn.addEventListener("click",()=>{
+  const t=root.getAttribute("data-theme")==="dark"?"light":"dark";
+  root.classList.add("theme-anim");apply(t);
+  try{localStorage.setItem("bip-theme",t)}catch(e){}
+  setTimeout(()=>root.classList.remove("theme-anim"),450);
+ });
+ addEventListener("storage",e=>{if(e.key==="bip-theme"&&(e.newValue==="dark"||e.newValue==="light"))apply(e.newValue)});
+})();
+</script>
+</body>
+</html>
