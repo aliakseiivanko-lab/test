@@ -445,15 +445,18 @@ def for_task_7(app, input_value):
     app.save_environment_to_memory()
 
 def for_task_8(app, input_value):
+    # Вертикальный коридор: закрасить все клетки сверху вниз.
     app.clear_task()
-    app.field(5, 5)
-    app.robot.start_pos(1, 1)
-    app.add_end_position(5, 5)
-    # Треугольник: в строке i нужно закрасить i клеток
-    for i in range(1, 6):
-        for j in range(1, i + 1):
-            app.mark_cell_to_fill(i, j)
+    rows = 7
+    app.field(rows, 3)
+    cells = [(r, 2) for r in range(1, rows + 1)]
+    app.robot.start_pos(1, 2)
+    app.add_end_position(rows, 2)
+    walls_around(app, cells, rows, 3)
+    for (m, n) in cells:
+        app.mark_cell_to_fill(m, n)
     app.save_environment_to_memory()
+
 
 def for_task_9(app, input_value):
     app.clear_task()
@@ -565,14 +568,19 @@ def for_task_15(app, input_value):
     app.save_environment_to_memory()
 
 def for_task_16(app, input_value):
+    # Прямоугольник 8x2: закрасить все клетки, пройдя сначала вниз по левому столбцу,
+    # затем вправо и вверх по правому.
     app.clear_task()
-    app.field(6, 6)
+    rows, cols = 8, 2
+    cells = [(r, c) for r in range(1, rows + 1) for c in range(1, cols + 1)]
+    app.field(rows, cols)
     app.robot.start_pos(1, 1)
-    app.add_end_position(6, 6)
-    for i in range(1, 7):
-        for j in range(i, 7):
-            app.mark_cell_to_fill(i, j)
+    app.add_end_position(1, 2)
+    walls_around(app, cells, rows, cols)
+    for (m, n) in cells:
+        app.mark_cell_to_fill(m, n)
     app.save_environment_to_memory()
+
 
 def for_task_17(app, input_value):
     app.clear_task()
@@ -588,15 +596,18 @@ def for_task_17(app, input_value):
     app.save_environment_to_memory()
 
 def for_task_18(app, input_value):
+    # Уголок: сначала вправо, потом вниз. Закрасить весь путь.
     app.clear_task()
-    app.field(5, 9)
+    rows, cols = 6, 6
+    path = [(1, c) for c in range(1, 6)] + [(r, 5) for r in range(2, 7)]
+    app.field(rows, cols)
     app.robot.start_pos(1, 1)
-    app.add_end_position(5, 9)
-    for i in range(1, 6):
-        for j in range(1, 10):
-            if (i + j) % 2 == 0:
-                app.mark_cell_to_fill(i, j)
+    app.add_end_position(6, 5)
+    walls_around(app, path, rows, cols)
+    for (m, n) in path:
+        app.mark_cell_to_fill(m, n)
     app.save_environment_to_memory()
+
 
 def for_task_19(app, input_value):
     app.clear_task()
@@ -1169,29 +1180,19 @@ def while_task_6(app, input_value):
     app.save_environment_to_memory()
 
 def while_task_7(app, input_value):
-    # Коридор-уголок: сначала вправо до стены, потом вниз до стены. Закрасить весь коридор.
+    # Коридор переменной длины: робот стоит у правой стены и идёт влево до стены, закрашивая клетки.
+    # Решается одним while без вложенных циклов, тело — «закрасить, шаг влево».
     app.clear_task()
-    a = random.randint(3, 7)
-    b = random.randint(3, 6)
-    top = 2
-    left = 2
-    right = left + a - 1
-    bottom = top + b - 1
-    app.field(bottom + 1, right + 1)
-    app.robot.start_pos(top, left)
-    app.add_end_position(bottom, right)
-    app.add_wall('left', top, left)
-    for c in range(left, right + 1):
-        app.add_wall('up', top, c)
-        app.mark_cell_to_fill(top, c)
-        if c < right:
-            app.add_wall('down', top, c)
-    for r in range(top, bottom + 1):
-        app.add_wall('right', r, right)
-        app.mark_cell_to_fill(r, right)
-        if r > top:
-            app.add_wall('left', r, right)
-    app.add_wall('down', bottom, right)
+    length = random.randint(3, 10)
+    first = 2                    # первый столбец коридора
+    last = first + length - 1    # последний столбец коридора
+    app.field(5, last + 1)
+    app.robot.start_pos(3, last)
+    app.add_end_position(3, first)
+    cells = [(3, c) for c in range(first, last + 1)]
+    walls_around(app, cells, 5, last + 1)
+    for (m, n) in cells:
+        app.mark_cell_to_fill(m, n)
     app.save_environment_to_memory()
 
 def while_task_8(app, input_value):
@@ -1229,19 +1230,21 @@ def while_task_8(app, input_value):
     app.save_environment_to_memory()
 
 def while_task_9(app, input_value):
-    # Треугольная комната из стен: закрасить её целиком, строка за строкой.
+    # Уголок: вправо до стены, затем вниз до стены. Длины сторон случайны,
+    # поэтому один и тот же алгоритм должен работать для любого коридора.
     app.clear_task()
-    k = random.randint(3, 7)
-    app.field(k, k)
-    app.robot.start_pos(1, 1)
-    app.add_end_position(k, k)
-    for r in range(1, k + 1):
-        app.add_wall('right', r, r)
-        if r > 1:
-            app.add_wall('up', r, r)
-        for col in range(1, r + 1):
-            app.mark_cell_to_fill(r, col)
+    a = random.randint(3, 6)  # длина горизонтальной части
+    b = random.randint(2, 5)  # длина вертикальной части
+    rows, cols = b + 2, a + 2
+    path = [(2, c) for c in range(1, a + 1)] + [(r, a) for r in range(3, b + 2)]
+    app.field(rows, cols)
+    app.robot.start_pos(2, 1)
+    app.add_end_position(b + 1, a)
+    walls_around(app, path, rows, cols)
+    for (m, n) in path:
+        app.mark_cell_to_fill(m, n)
     app.save_environment_to_memory()
+
 
 def while_task_10(app, input_value):
     # Обойти препятствие (блок из стен) сверху и закрасить путь вокруг него.
@@ -1296,23 +1299,20 @@ def while_task_12(app, input_value):
     app.save_environment_to_memory()
 
 def while_task_13(app, input_value):
-    # Лестница случайной высоты: подняться по ступеням и закрасить весь путь.
+    # Уголок: вниз до стены, затем вправо до стены. Длины сторон случайны.
     app.clear_task()
-    k = random.randint(3, 8)
-    app.field(k + 1, k + 1)
-    r, c = k + 1, 1
-    path = [(r, c)]
-    for i in range(k):
-        c += 1
-        path.append((r, c))
-        r -= 1
-        path.append((r, c))
-    app.robot.start_pos(k + 1, 1)
-    app.add_end_position(1, k + 1)
-    walls_around(app, path, k + 1, k + 1)
+    a = random.randint(3, 6)  # длина вертикальной части
+    b = random.randint(2, 5)  # длина горизонтальной части
+    rows, cols = a + 2, b + 3
+    path = [(r, 2) for r in range(1, a + 1)] + [(a, c) for c in range(3, b + 2)]
+    app.field(rows, cols)
+    app.robot.start_pos(1, 2)
+    app.add_end_position(a, b + 1)
+    walls_around(app, path, rows, cols)
     for (m, n) in path:
         app.mark_cell_to_fill(m, n)
     app.save_environment_to_memory()
+
 
 def while_task_14(app, input_value):
     # Коридор-«подкова»: вниз, вправо, вверх до стены. Закрасить весь коридор.
@@ -1348,35 +1348,41 @@ def while_task_15(app, input_value):
     app.save_environment_to_memory()
 
 def while_task_16(app, input_value):
-    # Гребёнка со случайным числом зубцов и случайной высотой: закрасить верхушки зубцов.
+    # Коридор с нишами сверху: закрасить каждую нишу.
     app.clear_task()
     k = random.randint(2, 5)
-    h = random.randint(2, 4)
-    w = 2 * k - 1
-    rows = h + 1
-    app.field(rows, w)
-    app.robot.start_pos(rows, 1)
-    app.add_end_position(rows, w)
-    cells = [(rows, c) for c in range(1, w + 1)]
-    for c in range(1, w + 1, 2):
-        for r in range(1, rows):
-            cells.append((r, c))
-        app.mark_cell_to_fill(1, c)
-    walls_around(app, cells, rows, w)
+    w = 2 * k + 1
+    cells = [(3, c) for c in range(1, w + 1)]
+    niches = [(2, c) for c in range(2, w, 2)]
+    cells += niches
+    app.field(3, w)
+    app.robot.start_pos(3, 1)
+    app.add_end_position(3, w)
+    walls_around(app, cells, 3, w)
+    for (m, n) in niches:
+        app.mark_cell_to_fill(m, n)
     app.save_environment_to_memory()
 
+
 def while_task_17(app, input_value):
-    # Коридор случайной длины: закрасить только те клетки, над которыми есть стена.
+    # Коридор-«скоба»: вправо по верхней стороне, вниз по правой, влево по нижней.
+    # Размеры случайны, поэтому нужен while. Путь линейный (робот никуда не возвращается),
+    # значит хватает трёх циклов подряд — без вложенных.
     app.clear_task()
-    L = random.randint(4, 12)
-    app.field(3, L + 1)
-    app.robot.start_pos(2, 1)
-    app.add_end_position(2, L)
-    walls_around(app, [(2, c) for c in range(1, L + 1)], 3, L + 1)
-    for c in range(1, L + 1):
-        if random.random() < 0.5:
-            app.mark_cell_to_fill(2, c)
+    a = random.randint(3, 8)  # ширина
+    b = random.randint(3, 7)  # высота
+    rows, cols = b + 2, a + 2
+    path = [(2, c) for c in range(2, a + 2)]
+    path += [(r, a + 1) for r in range(3, b + 2)]
+    path += [(b + 1, c) for c in range(a, 1, -1)]
+    app.field(rows, cols)
+    app.robot.start_pos(2, 2)
+    app.add_end_position(b + 1, 2)
+    walls_around(app, path, rows, cols)
+    for (m, n) in path:
+        app.mark_cell_to_fill(m, n)
     app.save_environment_to_memory()
+
 
 def while_task_18(app, input_value):
     # Кольцевой коридор: вправо, вниз, влево, вверх до стены. Закрасить всё кольцо.
@@ -1405,41 +1411,38 @@ def while_task_18(app, input_value):
     app.save_environment_to_memory()
 
 def while_task_19(app, input_value):
-    # Ряд комнат 2x2 со случайным числом комнат: закрасить правую нижнюю клетку каждой комнаты.
+    # Коридор с нишами снизу: закрасить каждую нишу.
     app.clear_task()
     k = random.randint(2, 5)
     w = 3 * k - 1
+    cells = [(2, c) for c in range(1, w + 1)]
+    niches = [(3, 1 + 3 * j) for j in range(k)]
+    cells += niches
     app.field(4, w)
     app.robot.start_pos(2, 1)
     app.add_end_position(2, w)
-    cells = [(2, c) for c in range(1, w + 1)]
-    for j in range(k):
-        c0 = 1 + 3 * j
-        cells += [(3, c0), (3, c0 + 1)]
-        app.mark_cell_to_fill(3, c0 + 1)
     walls_around(app, cells, 4, w)
+    for (m, n) in niches:
+        app.mark_cell_to_fill(m, n)
     app.save_environment_to_memory()
 
+
 def while_task_20(app, input_value):
-    # Змейка случайного размера: пройти все ряды и закрасить клетки, где змейка разворачивается.
+    # Коридор-«стакан»: вниз, вправо, вверх до стены. Размеры случайны.
     app.clear_task()
-    rows = random.randint(3, 8)
-    cols = random.randint(4, 8)
+    a = random.randint(3, 7)  # глубина стакана
+    b = random.randint(3, 7)  # ширина стакана
+    rows, cols = a + 1, b + 2
+    path = [(r, 2) for r in range(1, a + 1)]
+    path += [(a, c) for c in range(3, b + 2)]
+    path += [(r, b + 1) for r in range(a - 1, 0, -1)]
     app.field(rows, cols)
-    app.robot.start_pos(1, 1)
-    if rows % 2 == 1:
-        app.add_end_position(rows, cols)
-    else:
-        app.add_end_position(rows, 1)
-    for i in range(1, rows):
-        if i % 2 == 1:
-            for c in range(1, cols):
-                app.add_wall('down', i, c)
-            app.mark_cell_to_fill(i, cols)
-        else:
-            for c in range(2, cols + 1):
-                app.add_wall('down', i, c)
-            app.mark_cell_to_fill(i, 1)
+    app.robot.start_pos(1, 2)
+    app.add_end_position(1, b + 1)
+    walls_around(app, path, rows, cols)
+    for (m, n) in path:
+        app.mark_cell_to_fill(m, n)
     app.save_environment_to_memory()
+
 
 `;
