@@ -108,6 +108,7 @@ h2{font-family:"Fredoka",system-ui,sans-serif;font-size:clamp(1.5rem,3.4vw,2.1re
 .card.c7{--ac:#4f7df9;--ac2:#60a5fa}
 .card.c9{--ac:#e14f9a;--ac2:#f472b6}
 .card.c10{--ac:#7c5cf0;--ac2:#a78bfa}
+.card.c11{--ac:#e8590c;--ac2:#fb923c}
 .card:hover,.card:focus-visible{
   transform:translateY(-8px);border-color:var(--ac);
   box-shadow:0 20px 44px rgba(35,40,58,.13);outline:none;
@@ -146,7 +147,7 @@ h2{font-family:"Fredoka",system-ui,sans-serif;font-size:clamp(1.5rem,3.4vw,2.1re
 /* ---------- появление ---------- */
 .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
 .reveal.in{opacity:1;transform:none}
-.reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}.reveal.d5{transition-delay:.40s}
+.reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}.reveal.d5{transition-delay:.40s}.reveal.d6{transition-delay:.48s}
 
 footer{margin-top:26px;padding:26px 0 34px;text-align:center;color:var(--muted);font-size:.9rem}
 footer b{color:var(--accent)}
@@ -283,13 +284,13 @@ header .tag{margin-left:14px}
     <div class="mid reveal d1">
       <h1>Исполнители <em>алгоритмов</em></h1>
       <p>
-        Черепаха, Робот и три Python-редактора — выбери исполнителя, открой модуль
+        Черепаха, Робот, три Python-редактора и HTML-редактор — выбери исполнителя, открой модуль
         и решай задачи. Каждый модуль живёт на своей странице: нажми на карточку — и мы перейдём.
       </p>
       <div class="badges">
-        <span>5 модулей</span>
-        <span>6–10 классы</span>
-        <span>Черепаха · Робот · Python</span>
+        <span>6 модулей</span>
+        <span>6–11 классы</span>
+        <span>Черепаха · Робот · Python · HTML</span>
       </div>
     </div>
 
@@ -309,7 +310,7 @@ header .tag{margin-left:14px}
 
   <section>
     <h2 class="reveal">Выбери модуль</h2>
-    <p class="sub reveal d1">Карточки отсортированы по классам — от черепахи шестиклассника до массивов десятиклассника.</p>
+    <p class="sub reveal d1">Карточки отсортированы по классам — от черепахи шестиклассника до HTML-редактора одиннадцатиклассника.</p>
 
     <div class="courses">
       <a class="card c6 reveal d1" href="turtle.html" data-name="Черепаха — 6 класс">
@@ -385,11 +386,28 @@ header .tag{margin-left:14px}
           <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </span>
       </a>
+
+      <a class="card c11 reveal d6" href="11.html" data-name="HTML — 11 класс">
+        <span class="num">11</span>
+        <span class="ic"><svg viewBox="0 0 64 64">
+          <rect x="10" y="14" width="44" height="36" rx="6" />
+          <path d="M10 24 H54" />
+          <circle cx="16" cy="19" r="1.2" /><circle cx="21" cy="19" r="1.2" />
+          <path d="M26 31 L20 37 L26 43" />
+          <path d="M38 31 L44 37 L38 43" />
+          <path d="M34 30 L30 44" />
+        </svg></span>
+        <h3>HTML-редактор</h3>
+        <div class="topics"><span>теги</span><span>вёрстка</span><span>предпросмотр</span></div>
+        <span class="go">Открыть модуль
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
     </div>
   </section>
 
   <footer class="reveal">
-    Полигон исполнителей · черепаха, робот и Python для <b>6–10 классов</b>
+    Полигон исполнителей · черепаха, робот, Python и HTML для <b>6–11 классов</b>
   </footer>
 
 </div>
